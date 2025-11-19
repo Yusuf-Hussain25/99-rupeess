@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useState, useEffect, useRef, KeyboardEvent } from 'react';
 import { useRouter } from 'next/navigation';
@@ -97,24 +98,21 @@ export default function Navbar() {
   }, []);
 
   return (
-    <nav className="sticky top-0 z-50 w-full bg-white shadow-md border-b-2 border-blue-50">
+    <nav className="sticky top-0 z-50 w-full bg-gray-900/95 backdrop-blur-md shadow-md border-b border-amber-500/40">
       <div className="max-w-[98%] mx-auto px-2 sm:px-3 lg:px-4">
         <div className="flex items-center justify-between h-18 md:h-20 gap-4 py-2">
           {/* Left: Logo with enhanced design */}
           <div className="flex items-center shrink-0">
             <Link href="/" className="flex items-center group">
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl blur-sm opacity-50 group-hover:opacity-75 transition-opacity"></div>
-                <div className="relative bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl px-3 py-2 shadow-lg">
-                  <span className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">
-                    <span className="text-blue-100">99</span>
-                    <span className="text-orange-400">rupeess</span>
-                  </span>
-                </div>
-              </div>
-              <div className="hidden lg:block ml-3">
-                <div className="text-xs font-semibold text-blue-600 uppercase tracking-wider">Business Directory</div>
-                <div className="text-xs text-gray-500">Find & Connect Locally</div>
+              <div className="relative w-32 h-16 sm:w-40 sm:h-20">
+                <Image
+                  src="/Assets/kvl-logo.png"
+                  alt="8 Ruppess logo"
+                  fill
+                  sizes="400px"
+                  priority
+                  className="object-contain drop-shadow-md transition-transform duration-300 group-hover:scale-105"
+                />
               </div>
             </Link>
           </div>
@@ -130,7 +128,7 @@ export default function Navbar() {
             {/* Search Input - Enhanced with gradient focus */}
             <div className={`relative flex-1 transition-all duration-300 ${isSearchFocused ? 'scale-[1.02]' : ''}`} role="search">
               <div className="relative">
-                <div className={`absolute inset-0 bg-gradient-to-r from-blue-500/20 to-orange-500/20 rounded-xl blur-md transition-opacity ${isSearchFocused ? 'opacity-100' : 'opacity-0'}`}></div>
+                <div className={`absolute inset-0 bg-linear-to-r from-yellow-500/20 via-amber-400/20 to-yellow-600/20 rounded-xl blur-md transition-opacity ${isSearchFocused ? 'opacity-100' : 'opacity-0'}`}></div>
                 <div className="relative">
                   <input
                     ref={inputRef}
@@ -151,21 +149,11 @@ export default function Navbar() {
                     aria-label="Search businesses, services or categories"
                   />
                   {/* Voice Search Icon - Enhanced */}
-                  <button
-                    type="button"
-                    className="absolute right-14 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all group"
-                    aria-label="Voice search"
-                  >
-                    <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
-                      <path d="M19 10v1a7 7 0 0 1-14 0v-1h2v1a5 5 0 0 0 10 0v-1h2z"/>
-                      <path d="M12 18v4h-2v2h6v-2h-2v-4h-2z"/>
-                    </svg>
-                  </button>
+                  {/* Voice search button removed as requested */}
                   {/* Search Button - Enhanced with gradient */}
                   <button
                     onClick={() => handleSubmit()}
-                    className="absolute right-1 top-1/2 -translate-y-1/2 w-11 h-11 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-xl flex items-center justify-center transition-all shadow-md hover:shadow-lg hover:scale-105 active:scale-95"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 w-11 h-11 bg-linear-to-r from-yellow-400 via-amber-500 to-yellow-600 rounded-xl flex items-center justify-center transition-all shadow-md hover:shadow-lg hover:opacity-90 hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300"
                     aria-label="Search"
                   >
                     <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -187,15 +175,15 @@ export default function Navbar() {
                         key={suggestion.id}
                         onClick={() => handleSuggestionClick(suggestion)}
                         onMouseEnter={() => setSelectedIndex(index)}
-                        className={`w-full px-4 py-3 text-left rounded-xl hover:bg-gradient-to-r hover:from-blue-50 hover:to-orange-50 focus:bg-gradient-to-r focus:from-blue-50 focus:to-orange-50 focus:outline-none transition-all ${
-                          index === selectedIndex ? 'bg-gradient-to-r from-blue-50 to-orange-50 ring-2 ring-blue-200' : ''
+                        className={`w-full px-4 py-3 text-left rounded-xl hover:bg-linear-to-r hover:from-yellow-50 hover:via-amber-50 hover:to-orange-100 focus:bg-linear-to-r focus:from-yellow-50 focus:via-amber-50 focus:to-orange-100 focus:outline-none transition-all ${
+                          index === selectedIndex ? 'bg-linear-to-r from-yellow-50 via-amber-50 to-orange-100 ring-2 ring-amber-300' : ''
                         }`}
                       >
                         <div className="flex items-center gap-3">
                           <div className={`shrink-0 w-10 h-10 rounded-xl flex items-center justify-center shadow-sm ${
-                            suggestion.type === 'shop' ? 'bg-gradient-to-br from-blue-100 to-blue-200 text-blue-700' :
-                            suggestion.type === 'category' ? 'bg-gradient-to-br from-green-100 to-green-200 text-green-700' :
-                            'bg-gradient-to-br from-purple-100 to-purple-200 text-purple-700'
+                            suggestion.type === 'shop' ? 'bg-linear-to-br from-blue-100 to-blue-200 text-blue-700' :
+                            suggestion.type === 'category' ? 'bg-linear-to-br from-green-100 to-green-200 text-green-700' :
+                            'bg-linear-to-br from-purple-100 to-purple-200 text-purple-700'
                           }`}>
                             {suggestion.type === 'shop' ? (
                               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -247,7 +235,7 @@ export default function Navbar() {
                 />
                 <button
                   onClick={() => handleSubmit()}
-                  className="absolute right-1 top-1/2 -translate-y-1/2 w-8 h-8 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg flex items-center justify-center"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 w-8 h-8 bg-linear-to-r from-yellow-400 via-amber-500 to-yellow-600 rounded-lg flex items-center justify-center text-white shadow-md hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300"
                   aria-label="Search"
                 >
                   <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -262,35 +250,14 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Right: Enhanced CTAs */}
+          {/* Right: CTAs */}
           <div className="flex items-center gap-2 md:gap-3 shrink-0">
-            {/* Premium Badge */}
-            <div className="hidden xl:block">
-              <span className="bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wide shadow-md">
-                Premium
-              </span>
-            </div>
-
-            {/* Desktop CTAs with enhanced design */}
+            {/* Desktop CTAs */}
             <div className="hidden lg:flex items-center gap-3">
-              {/* Messages/Leads */}
-              <Link
-                href="/messages"
-                className="relative flex items-center gap-2 px-3 py-2 text-sm font-semibold text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all group"
-              >
-                <div className="relative">
-                  <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-gradient-to-r from-red-500 to-red-600 rounded-full ring-2 ring-white"></span>
-                </div>
-                <span className="font-medium">Messages</span>
-              </Link>
-
               {/* Promote Business */}
               <Link
                 href="/promote"
-                className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-xl transition-all group"
+                className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-linear-to-r from-yellow-400 via-amber-500 to-yellow-600 rounded-xl shadow-md transition-all hover:shadow-lg hover:opacity-90 group"
               >
                 <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
@@ -298,33 +265,13 @@ export default function Navbar() {
                 <span className="font-medium">Promote</span>
               </Link>
 
-              {/* Add Listing */}
-              <Link
-                href="/add-listing"
-                className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-gray-700 hover:text-green-600 hover:bg-green-50 rounded-xl transition-all group"
-              >
-                <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                <span className="font-medium">Add Listing</span>
-              </Link>
-
-              {/* Notifications */}
-              <button
-                className="relative p-2 text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all group"
-                aria-label="Notifications"
-              >
-                <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                </svg>
-                <span className="absolute top-1 right-1 w-2 h-2 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full ring-2 ring-white"></span>
-              </button>
+              {/* Notifications removed as requested */}
             </div>
 
             {/* Login / Sign Up Button - Enhanced */}
             <Link
               href="/login"
-              className="inline-flex items-center gap-2 px-4 md:px-5 py-2 md:py-2.5 text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 rounded-xl transition-all shadow-md hover:shadow-lg hover:scale-105 active:scale-95 shrink-0"
+              className="inline-flex items-center gap-2 px-4 md:px-5 py-2 md:py-2.5 text-sm font-bold text-white bg-linear-to-r from-yellow-400 via-amber-500 to-yellow-600 rounded-xl transition-all shadow-md hover:shadow-lg hover:opacity-90 hover:scale-105 active:scale-95 shrink-0"
             >
               <svg className="w-4 h-4 hidden sm:inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -335,7 +282,7 @@ export default function Navbar() {
 
             {/* Mobile Menu */}
             <button
-              className="lg:hidden p-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+              className="lg:hidden p-2 text-white bg-linear-to-r from-yellow-400 via-amber-500 to-yellow-600 rounded-lg shadow-md transition-all hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300"
               aria-label="Menu"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

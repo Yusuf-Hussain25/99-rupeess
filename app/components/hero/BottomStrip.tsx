@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { useEffect, useMemo, useState } from 'react';
 
 interface Banner {
   bannerId: string;
@@ -12,10 +13,111 @@ interface Banner {
 
 interface BottomStripProps {
   banners: Banner[];
-  onBannerClick: (bannerId: string, section: 'bottom', position: number, link: string) => void;
+  onBannerClick: (
+    bannerId: string,
+    section: 'bottom',
+    position: number,
+    link: string
+  ) => void;
 }
 
+const encodeAssetPath = (path: string) =>
+  encodeURI(path).replace(/#/g, '%23');
+
+const createBanner = (id: string, fileName: string, alt: string): Banner => ({
+  bannerId: id,
+  imageUrl: encodeAssetPath(`/Assets/${fileName}`),
+  alt,
+  link: '#',
+});
+
+const fallbackSetA: Banner[] = [
+  createBanner('asset-swiggy', 'Swiggy-logo.jpg', 'Swiggy'),
+  createBanner('asset-ola', 'Ola-Cabs-Logo-2048x1153.jpg', 'Ola'),
+  createBanner('asset-nykaa', 'Nykaa_New_Logo.svg', 'Nykaa'),
+  createBanner('asset-tata', 'Tata_logo.svg.png', 'Tata'),
+  createBanner('asset-reliance', 'Reliance-Industries-Limited-Logo.png', 'Reliance'),
+  createBanner('asset-parle', 'Parle-Logo-history.png', 'Parle'),
+  createBanner('asset-amul', 'Amul-Logo.png', 'Amul'),
+  createBanner('asset-itc', 'ITC_-_Company_Logo.jpg', 'ITC'),
+  createBanner('asset-infosys', 'Infosys-Logo.jpg', 'Infosys'),
+  createBanner('asset-lic', 'LIC-Logo.png', 'LIC'),
+  createBanner('asset-godrej', 'Godrej_Logo.svg.png', 'Godrej'),
+  createBanner('asset-dabur', 'Dabur_Logo.svg.png', 'Dabur'),
+  createBanner('asset-adani', 'Adani_2012_logo.png', 'Adani'),
+  createBanner('asset-bajaj', 'Bajaj_Motorcycles_logo.svg.png', 'Bajaj'),
+  createBanner('asset-asianpaints', 'ASIANPAINT.NS-6124f67e.png', 'Asian Paints'),
+  createBanner('asset-hdfc', 'HDFC-Bank-logo.jpg', 'HDFC Bank'),
+  createBanner('asset-indigo', 'IndiGo-Logo.jpg', 'IndiGo'),
+  createBanner('asset-flipkart', 'Flipkart-logo (1).jpg', 'Flipkart'),
+  createBanner('asset-britannia', 'Britannia_images_Hero_600x400.jpg', 'Britannia'),
+  createBanner('asset-parle-biscuit', 'The 100 Most Famous Logos Of All Time (2025 Brands Ranked).jpeg', 'Iconic Logos'),
+];
+
+const fallbackSetB: Banner[] = [
+  createBanner('asset-sale', 'sale.jpg', 'Sale'),
+  createBanner('asset-sprite', 'Sprite logo vector download free SVG PNG.jpeg', 'Sprite'),
+  createBanner('asset-famous', 'The 100 Most Famous Logos Of All Time (2025 Brands Ranked).jpeg', 'Famous Logos'),
+  createBanner('asset-minimal', '_.jpeg', 'Minimal Logo'),
+  createBanner('asset-colors', 'colroful-abstract-circle-logo-design-template-vector.jpg', 'Abstract Logo'),
+  createBanner('asset-mahindra', 'Mahindra-Logo.png', 'Mahindra'),
+  createBanner('asset-meta', 'Meta Sticker PNG Images (Transparent HD Photo Clipart).jpeg', 'Meta'),
+  createBanner('asset-nvidia', 'NVIDIA vector logo (_EPS + .AI + .CDR) download for free', 'NVIDIA'),
+  createBanner('asset-visa', 'Visa logo png image #2017 - Free Transparent PNG Logos.jpeg', 'Visa'),
+  createBanner('asset-starbucks', 'Starbucks Logo PNG Vector (EPS) Free Download.jpeg', 'Starbucks'),
+  createBanner('asset-burgerking', 'Download Burger king new logo on transparent background.jpeg', 'Burger King'),
+  createBanner('asset-adidas', 'Adidas Originals Blue Logo Sticker - Sticker Mania.jpeg', 'Adidas'),
+  createBanner('asset-lays', 'Lay\'s White.jpeg', 'Lay\'s'),
+  createBanner('asset-coca', 'Coca White _ M&I.jpeg', 'Coca'),
+  createBanner('asset-sony', 'For the ps3 alone i love sony.jpeg', 'Sony'),
+  createBanner('asset-britannia-alt', 'Britannia_images_Hero_600x400.jpg', 'Britannia'),
+  createBanner('asset-lenovo', 'Lenovo Logo PNG Vector, Icon Free Download.jpeg', 'Lenovo'),
+  createBanner('asset-parle-fmcg', 'parle-continues-to-be-indias-top-fmcg-brand-at-home-12th-time-in-a-row.webp', 'Parle FMCG'),
+  createBanner('asset-graphic', 'Graphic Designer Replaces Wordmarks In Famous Logos With The Fonts They Use 2351.jpeg', 'Wordmark Graphics'),
+  createBanner('asset-meta-alt', 'Graphic Designer Replaces Wordmarks In 30 Famous Logos With The Fonts They Use.jpeg', 'Wordmark Logos'),
+];
+
+const FADE_DURATION = 600;
+const ROTATION_INTERVAL = 5000;
+
 export default function BottomStrip({ banners, onBannerClick }: BottomStripProps) {
+  const chunkBanners = (source: Banner[]) => {
+    const chunks: Banner[][] = [];
+    for (let i = 0; i < source.length; i += 20) {
+      chunks.push(source.slice(i, i + 20));
+    }
+    return chunks;
+  };
+
+  const bannerSets = useMemo(() => {
+    const dynamicSets = chunkBanners(banners);
+    if (dynamicSets.length === 0) {
+      return [fallbackSetA, fallbackSetB];
+    }
+    return [...dynamicSets, fallbackSetA, fallbackSetB];
+  }, [banners]);
+
+  const [activeSetIndex, setActiveSetIndex] = useState(0);
+  const [isFading, setIsFading] = useState(false);
+
+  useEffect(() => {
+    if (bannerSets.length <= 1) return;
+    const interval = setInterval(() => {
+      setIsFading(true);
+      setTimeout(() => {
+        setActiveSetIndex((prev) => (prev + 1) % bannerSets.length);
+        setIsFading(false);
+      }, FADE_DURATION);
+    }, ROTATION_INTERVAL);
+
+    return () => clearInterval(interval);
+  }, [bannerSets.length]);
+
+  useEffect(() => {
+    setActiveSetIndex(0);
+  }, [bannerSets.length]);
+
+  const currentBanners = bannerSets[activeSetIndex] || [];
   const renderPlaceholder = (position: number) => (
     <div
       onClick={() => window.location.href = '/advertise'}
@@ -29,15 +131,19 @@ export default function BottomStrip({ banners, onBannerClick }: BottomStripProps
   );
 
   // Split banners into 2 rows of 10 each
-  const row1 = banners.slice(0, 10);
-  const row2 = banners.slice(10, 20);
+  const row1 = currentBanners.slice(0, 10);
+  const row2 = currentBanners.slice(10, 20);
 
   return (
     <div className="w-full mt-6">
       {/* Desktop: 2 Rows of 10 images each */}
-      <div className="hidden md:block">
-        {/* Row 1: 10 images */}
-        <div className="flex flex-wrap justify-center gap-2 mb-2">
+      <div className="hidden md:block relative" aria-live="polite">
+        <div
+          className={`transition-opacity ${isFading ? 'opacity-0' : 'opacity-100'}`}
+          style={{ transitionDuration: `${FADE_DURATION}ms` }}
+        >
+          {/* Row 1: 10 images */}
+          <div className="flex flex-wrap justify-center gap-2 mb-2">
           {[...Array(10)].map((_, index) => {
             const banner = row1[index];
             return banner ? (
@@ -66,8 +172,8 @@ export default function BottomStrip({ banners, onBannerClick }: BottomStripProps
             );
           })}
         </div>
-        {/* Row 2: 10 images */}
-        <div className="flex flex-wrap justify-center gap-2">
+          {/* Row 2: 10 images */}
+          <div className="flex flex-wrap justify-center gap-2">
           {[...Array(10)].map((_, index) => {
             const banner = row2[index];
             const actualIndex = index + 10;
@@ -96,14 +202,18 @@ export default function BottomStrip({ banners, onBannerClick }: BottomStripProps
               </div>
             );
           })}
+          </div>
         </div>
       </div>
 
       {/* Mobile: Horizontal Swiper */}
-      <div className="md:hidden overflow-x-auto scrollbar-hide -mx-4 px-4 snap-x snap-mandatory">
-        <div className="flex gap-3" style={{ width: 'max-content' }}>
+      <div className="md:hidden overflow-x-auto scrollbar-hide -mx-4 px-4 snap-x snap-mandatory" aria-live="polite">
+        <div
+          className={`flex gap-3 transition-opacity ${isFading ? 'opacity-0' : 'opacity-100'}`}
+          style={{ width: 'max-content', transitionDuration: `${FADE_DURATION}ms` }}
+        >
           {[...Array(20)].map((_, index) => {
-            const banner = banners[index];
+            const banner = currentBanners[index];
             return banner ? (
               <button
                 key={banner.bannerId}
