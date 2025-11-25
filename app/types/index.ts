@@ -85,6 +85,8 @@ export interface Location {
   pincode?: number;
   district?: string;
   source?: 'auto' | 'manual' | 'pincode' | 'browser';
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface BusinessSummary {

@@ -154,7 +154,13 @@ export default function HeroSection({ category }: HeroSectionProps) {
         {/* Desktop: 3-Column Grid Layout */}
         <div className="hidden lg:grid lg:grid-cols-[20%_60%_20%] gap-3 md:gap-4 mb-4">
           {/* LEFT COLUMN (20%) */}
-          <LeftRail banners={data.left} onBannerClick={handleBannerClick} height="h-[480px]" />
+          <LeftRail 
+            banners={data.left} 
+            onBannerClick={handleBannerClick} 
+            height="h-[480px]"
+            userLat={location.latitude}
+            userLng={location.longitude}
+          />
 
           {/* CENTER COLUMN (60%) - Hero */}
           <div className="flex items-center justify-center">
@@ -162,13 +168,25 @@ export default function HeroSection({ category }: HeroSectionProps) {
           </div>
 
           {/* RIGHT COLUMN (20%) */}
-          <RightRail banners={data.right} onBannerClick={handleBannerClick} height="h-[480px]" />
+          <RightRail 
+            banners={data.right} 
+            onBannerClick={handleBannerClick} 
+            height="h-[480px]"
+            userLat={location.latitude}
+            userLng={location.longitude}
+          />
         </div>
 
         {/* Tablet: Adjusted 3-Column Layout */}
         <div className="hidden md:grid lg:hidden md:grid-cols-[18%_64%_18%] gap-2 md:gap-3 mb-4">
           {/* LEFT COLUMN */}
-          <LeftRail banners={data.left} onBannerClick={handleBannerClick} height="h-[360px]" />
+          <LeftRail 
+            banners={data.left} 
+            onBannerClick={handleBannerClick} 
+            height="h-[360px]"
+            userLat={location.latitude}
+            userLng={location.longitude}
+          />
 
           {/* CENTER COLUMN */}
           <div className="flex items-center justify-center">
@@ -176,13 +194,25 @@ export default function HeroSection({ category }: HeroSectionProps) {
           </div>
 
           {/* RIGHT COLUMN */}
-          <RightRail banners={data.right} onBannerClick={handleBannerClick} height="h-[360px]" />
+          <RightRail 
+            banners={data.right} 
+            onBannerClick={handleBannerClick} 
+            height="h-[360px]"
+            userLat={location.latitude}
+            userLng={location.longitude}
+          />
         </div>
 
         {/* Mobile: 3-Column Grid Layout (Same as desktop but smaller) */}
         <div className="md:hidden grid grid-cols-[22%_56%_22%] gap-1.5 sm:gap-2 mb-4">
           {/* LEFT COLUMN */}
-          <LeftRail banners={data.left} onBannerClick={handleBannerClick} height="h-[200px] sm:h-[240px]" />
+          <LeftRail 
+            banners={data.left} 
+            onBannerClick={handleBannerClick} 
+            height="h-[200px] sm:h-[240px]"
+            userLat={location.latitude}
+            userLng={location.longitude}
+          />
 
           {/* CENTER COLUMN - Hero */}
           <div className="flex items-center justify-center">
@@ -190,7 +220,13 @@ export default function HeroSection({ category }: HeroSectionProps) {
           </div>
 
           {/* RIGHT COLUMN */}
-          <RightRail banners={data.right} onBannerClick={handleBannerClick} height="h-[200px] sm:h-[240px]" />
+          <RightRail 
+            banners={data.right} 
+            onBannerClick={handleBannerClick} 
+            height="h-[200px] sm:h-[240px]"
+            userLat={location.latitude}
+            userLng={location.longitude}
+          />
         </div>
 
         {/* BOTTOM STRIP - Full Width */}

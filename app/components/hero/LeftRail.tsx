@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { sortBannersByDistance, getBannerDistance } from '../../utils/shopDistance';
 
 interface Banner {
   bannerId: string;
@@ -15,6 +16,8 @@ interface LeftRailProps {
   banners: Banner[];
   onBannerClick: (bannerId: string, section: 'left', position: number, link: string) => void;
   height?: string; // To match center height
+  userLat?: number | null;
+  userLng?: number | null;
 }
 
 const encodeAssetPath = (path: string) =>
@@ -44,7 +47,16 @@ const fallbackSetB: Banner[] = [
 const FADE_DURATION = 600;
 const ROTATION_INTERVAL = 7000;
 
-export default function LeftRail({ banners, onBannerClick, height = 'h-[480px]' }: LeftRailProps) {
+export default function LeftRail({ banners, onBannerClick, height = 'h-[480px]', userLat, userLng }: LeftRailProps) {
+  // Sort banners by distance if user location is available
+  const sortedBanners = useMemo(() => {
+    if (userLat !== null && userLat !== undefined && userLng !== null && userLng !== undefined) {
+      const sorted = sortBannersByDistance(banners, userLat, userLng);
+      return sorted.map(item => item.banner);
+    }
+    return banners;
+  }, [banners, userLat, userLng]);
+
   const chunkBanners = (source: Banner[]) => {
     const chunks: Banner[][] = [];
     for (let i = 0; i < source.length; i += 4) {
@@ -54,12 +66,12 @@ export default function LeftRail({ banners, onBannerClick, height = 'h-[480px]' 
   };
 
   const bannerSets = useMemo(() => {
-    const dynamicSets = chunkBanners(banners);
+    const dynamicSets = chunkBanners(sortedBanners);
     if (dynamicSets.length === 0) {
       return [fallbackSetA, fallbackSetB];
     }
     return [...dynamicSets, fallbackSetA, fallbackSetB];
-  }, [banners]);
+  }, [sortedBanners]);
 
   const [activeSetIndex, setActiveSetIndex] = useState(0);
   const [isFading, setIsFading] = useState(false);
@@ -126,25 +138,60 @@ export default function LeftRail({ banners, onBannerClick, height = 'h-[480px]' 
       >
         {[0, 1, 2, 3].map((index) => {
           const banner = currentBanners[index];
+          const distance = banner ? getBannerDistance(banner, userLat ?? null, userLng ?? null) : null;
           return banner ? (
-            <button
+            <div
               key={banner.bannerId}
-              onClick={() => onBannerClick(banner.bannerId, 'left', index, banner.link)}
-              className="relative w-full flex-1 min-h-[45px] sm:min-h-[100px] rounded-lg bg-white shadow-sm overflow-hidden hover:scale-[1.02] hover:shadow-md transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-              aria-label={`Banner: ${banner.advertiser || 'Advertisement'} - Left slot ${index + 1}`}
-              data-banner-id={banner.bannerId}
-              data-section="left"
-              data-position={index}
+              className="relative group"
             >
-              <Image
-                src={banner.imageUrl}
-                alt={banner.alt}
-                fill
-                className="object-contain p-1 sm:p-2"
-                loading="lazy"
-                sizes="(max-width: 640px) 22vw, (max-width: 1024px) 18vw, 20vw"
-              />
-            </button>
+              <button
+                onClick={() => onBannerClick(banner.bannerId, 'left', index, banner.link)}
+                className="relative w-full flex-1 min-h-[45px] sm:min-h-[100px] rounded-lg bg-white shadow-sm overflow-hidden hover:scale-[1.02] hover:shadow-md transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                aria-label={`Banner: ${banner.advertiser || 'Advertisement'} - Left slot ${index + 1}`}
+                data-banner-id={banner.bannerId}
+                data-section="left"
+                data-position={index}
+              >
+                <Image
+                  src={banner.imageUrl}
+                  alt={banner.alt}
+                  fill
+                  className="object-contain p-1 sm:p-2"
+                  loading="lazy"
+                  sizes="(max-width: 640px) 22vw, (max-width: 1024px) 18vw, 20vw"
+                />
+              </button>
+              {distance !== null && (
+                <>
+                  {/* Mobile: Always visible badge in corner */}
+                  <div className="absolute top-1 right-1 sm:hidden z-10">
+                    <div className="bg-blue-600 text-white px-1.5 py-0.5 rounded-md shadow-lg flex items-center gap-1">
+                      <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      <span className="text-[8px] font-bold leading-tight">
+                        {distance.toFixed(1)}km
+                      </span>
+                    </div>
+                  </div>
+                  {/* Desktop: Hover overlay */}
+                  <div className="hidden sm:block absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg flex items-end justify-center pb-1 sm:pb-2 pointer-events-none">
+                    <div className="bg-white/95 backdrop-blur-sm px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg shadow-lg border border-white/20">
+                      <div className="flex items-center gap-1.5 sm:gap-2">
+                        <svg className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <span className="text-[10px] sm:text-xs font-bold text-gray-900">
+                          {distance.toFixed(1)} km away
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
           ) : (
             <div key={`left-placeholder-${index}`}>
               {renderPlaceholder(index)}

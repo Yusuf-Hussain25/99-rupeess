@@ -12,8 +12,8 @@ const mockBanners: Banner[] = [
     cta: 'Explore Now',
     ctaText: 'Visit Shop',
     linkUrl: '/search',
-    alt: 'Discover local businesses with 99rupeess',
-    advertiser: '99rupeess',
+    alt: 'Discover local businesses with 8rupeess',
+    advertiser: '8rupeess',
     sponsored: true,
   },
   // Left column banners - 4 items

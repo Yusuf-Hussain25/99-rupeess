@@ -83,7 +83,7 @@ export default function FeaturedBusinesses() {
                     <span className="text-gray-500 font-normal">({biz.reviews})</span>
                   </div>
 
-                  <a href={`/contact/${biz.id}`} className="inline-flex items-center gap-2 rounded-xl bg-linear-to-r from-yellow-400 via-amber-500 to-yellow-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md hover:shadow-lg hover:opacity-90 transition-all w-full sm:w-auto justify-center">
+                  <a href={`/contact/${biz.id}`} className="inline-flex items-center gap-2 rounded-xl bg-custom-gradient px-5 py-2.5 text-sm font-semibold text-white shadow-md hover:shadow-lg hover:opacity-90 transition-all w-full sm:w-auto justify-center">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.129a11.042 11.042 0 005.516 5.516l1.129-2.257a1 1 0 011.21-.502l4.493 1.498A1 1 0 0121 19.72V23a2 2 0 01-2 2h-1C9.163 25 3 18.837 3 11V5z" /></svg>
                     <span>Call Now</span>
                   </a>

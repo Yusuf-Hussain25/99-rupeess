@@ -86,11 +86,13 @@ type ReverseAddress = {
 export const matchAddressToLocation = (address?: ReverseAddress) => {
   if (!address) return undefined;
 
+  // First, try to match by pincode (most reliable)
   if (address.postcode) {
     const pincodeMatch = findLocationByPincode(address.postcode);
     if (pincodeMatch) return pincodeMatch;
   }
 
+  // Try exact name matching
   const candidates = [
     address.city,
     address.town,
@@ -105,6 +107,23 @@ export const matchAddressToLocation = (address?: ReverseAddress) => {
   for (const name of candidates) {
     const match = findLocationByName(name);
     if (match) return match;
+  }
+
+  // Try fuzzy/partial matching if exact match fails
+  for (const name of candidates) {
+    const normalized = slugify(name);
+    // Try to find locations that contain the name or vice versa
+    const fuzzyMatch = patnaLocations.find((loc) => {
+      const locCity = slugify(loc.city);
+      const locDistrict = slugify(loc.district);
+      return (
+        locCity.includes(normalized) ||
+        normalized.includes(locCity) ||
+        locDistrict.includes(normalized) ||
+        normalized.includes(locDistrict)
+      );
+    });
+    if (fuzzyMatch) return fuzzyMatch;
   }
 
   return undefined;
@@ -126,27 +145,67 @@ const getBrowserPosition = () =>
     });
   });
 
-export const detectBrowserLocation = async () => {
-  const position = await getBrowserPosition();
-  const params = new URLSearchParams({
-    format: 'jsonv2',
-    lat: String(position.coords.latitude),
-    lon: String(position.coords.longitude),
-    addressdetails: '1',
-  });
+export const detectBrowserLocation = async (): Promise<PatnaLocation | null> => {
+  try {
+    const position = await getBrowserPosition();
+    const lat = position.coords.latitude;
+    const lon = position.coords.longitude;
 
-  const response = await fetch(`${NOMINATIM_ENDPOINT}?${params.toString()}`, {
-    headers: {
-      'Accept-Language': 'en',
-    },
-  });
+    // Check if coordinates are within Patna bounds
+    const PATNA_BOUNDS = {
+      minLat: 25.3, // South
+      maxLat: 25.8, // North
+      minLon: 84.9, // West
+      maxLon: 85.4, // East
+    };
 
-  if (!response.ok) {
-    throw new Error('Unable to fetch reverse geocode details.');
+    const isWithinPatna = (
+      lat >= PATNA_BOUNDS.minLat &&
+      lat <= PATNA_BOUNDS.maxLat &&
+      lon >= PATNA_BOUNDS.minLon &&
+      lon <= PATNA_BOUNDS.maxLon
+    );
+
+    // Try reverse geocoding to get address details
+    const params = new URLSearchParams({
+      format: 'jsonv2',
+      lat: String(lat),
+      lon: String(lon),
+      addressdetails: '1',
+    });
+
+    try {
+      const response = await fetch(`${NOMINATIM_ENDPOINT}?${params.toString()}`, {
+        headers: {
+          'Accept-Language': 'en',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const matched = matchAddressToLocation(data.address);
+        
+        // If we found a match, return it
+        if (matched) {
+          return matched;
+        }
+      }
+    } catch (fetchError) {
+      // Reverse geocoding failed, use fallback
+    }
+
+    // If no match found but coordinates are within Patna bounds, return default location
+    // This allows users to proceed even if we can't match to a specific locality
+    if (isWithinPatna) {
+      const defaultLoc = getDefaultLocation();
+      return defaultLoc;
+    }
+
+    // Outside Patna bounds - return null
+    return null;
+  } catch (error) {
+    return null;
   }
-
-  const data = await response.json();
-  return matchAddressToLocation(data.address);
 };
 
 const STORAGE_KEY = 'preferred-location';

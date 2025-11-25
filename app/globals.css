@@ -42,3 +42,29 @@ body {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* Global input text color */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+input[type="number"],
+input[type="search"],
+textarea {
+  color: #111827; /* gray-900 */
+}
+
+input[type="text"]::placeholder,
+input[type="email"]::placeholder,
+input[type="password"]::placeholder,
+input[type="tel"]::placeholder,
+input[type="number"]::placeholder,
+input[type="search"]::placeholder,
+textarea::placeholder {
+  color: #9ca3af; /* gray-400 */
+}
+
+/* Custom gradient button */
+.bg-custom-gradient {
+  background: linear-gradient(90deg, #C79B34, #E7C670);
+}
