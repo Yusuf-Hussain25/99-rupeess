@@ -10,6 +10,10 @@ interface Banner {
   alt: string;
   link: string;
   advertiser?: string;
+  lat?: number;
+  lng?: number;
+  distance?: number;
+  isBusiness?: boolean;
 }
 
 interface LeftRailProps {
@@ -156,38 +160,67 @@ export default function LeftRail({ banners, onBannerClick, height = 'h-[480px]',
                   src={banner.imageUrl}
                   alt={banner.alt}
                   fill
-                  className="object-contain p-1 sm:p-2"
+                  className={`${banner.isBusiness ? 'object-cover' : 'object-contain'} p-1 sm:p-2`}
                   loading="lazy"
                   sizes="(max-width: 640px) 22vw, (max-width: 1024px) 18vw, 20vw"
                 />
+                {/* Gradient overlay for businesses */}
+                {banner.isBusiness && (
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                )}
               </button>
-              {distance !== null && (
+              {/* Distance and Call Button Overlay */}
+              {(distance !== null || banner.isBusiness) && (
                 <>
-                  {/* Mobile: Always visible badge in corner */}
-                  <div className="absolute top-1 right-1 sm:hidden z-10">
-                    <div className="bg-blue-600 text-white px-1.5 py-0.5 rounded-md shadow-lg flex items-center gap-1">
-                      <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      <span className="text-[8px] font-bold leading-tight">
-                        {distance.toFixed(1)}km
-                      </span>
-                    </div>
-                  </div>
-                  {/* Desktop: Hover overlay */}
-                  <div className="hidden sm:block absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg flex items-end justify-center pb-1 sm:pb-2 pointer-events-none">
-                    <div className="bg-white/95 backdrop-blur-sm px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg shadow-lg border border-white/20">
-                      <div className="flex items-center gap-1.5 sm:gap-2">
-                        <svg className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        <span className="text-[10px] sm:text-xs font-bold text-gray-900">
-                          {distance.toFixed(1)} km away
-                        </span>
+                  {/* Mobile: Always visible distance and time badge */}
+                  {(distance !== null || banner.distance) && (
+                    <div className="absolute top-1 right-1 sm:hidden z-10">
+                      <div className="bg-blue-600 text-white px-1.5 py-0.5 rounded-md shadow-lg flex flex-col items-center gap-0.5">
+                        <div className="flex items-center gap-1">
+                          <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                          <span className="text-[8px] font-bold leading-tight">
+                            {((distance ?? banner.distance) || 0).toFixed(1)}km
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-0.5">
+                          <svg className="w-2 h-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span className="text-[7px] font-semibold leading-tight">
+                            {Math.round(((distance ?? banner.distance) || 0) * 1.5)}min
+                          </span>
+                        </div>
                       </div>
                     </div>
+                  )}
+                  {/* Desktop: Hover overlay with distance and time */}
+                  <div className="hidden sm:block absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg flex flex-col items-center justify-end pb-2 sm:pb-3 pointer-events-none">
+                    {(distance !== null || banner.distance) && (
+                      <div className="bg-white/95 backdrop-blur-sm px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg shadow-lg border border-white/20">
+                        <div className="flex flex-col items-center gap-1">
+                          <div className="flex items-center gap-1.5 sm:gap-2">
+                            <svg className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <span className="text-[10px] sm:text-xs font-bold text-gray-900">
+                              {((distance ?? banner.distance) || 0).toFixed(1)} km
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1.5 sm:gap-2">
+                            <svg className="w-3 h-3 sm:w-4 sm:h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span className="text-[10px] sm:text-xs font-bold text-gray-900">
+                              {Math.round(((distance ?? banner.distance) || 0) * 1.5)} min
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </>
               )}

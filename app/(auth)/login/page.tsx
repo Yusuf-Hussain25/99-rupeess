@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/app/contexts/AuthContext';
@@ -9,10 +9,21 @@ import Navbar from '@/app/components/Navbar';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login } = useAuth();
+  const searchParams = useSearchParams();
+  const { login, isAuthenticated } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Get redirect URL from query params
+  const redirectUrl = searchParams.get('redirect') || '/';
+
+  // If already logged in, redirect immediately
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push(redirectUrl);
+    }
+  }, [isAuthenticated, redirectUrl, router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,9 +46,9 @@ export default function LoginPage() {
         // Update auth context
         login(data.token, data.user);
         
-        // Redirect to home after a short delay
+        // Redirect to the redirect URL or home after a short delay
         setTimeout(() => {
-          router.push('/');
+          router.push(redirectUrl);
         }, 1000);
       } else {
         toast.dismiss(loadingToast);

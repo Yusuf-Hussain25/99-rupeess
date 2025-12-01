@@ -1,10 +1,7 @@
-import CategoryPageTemplate, { CategoryPageSearchParams } from '../CategoryPageTemplate';
+'use client';
 
-type PageProps = {
-  searchParams?: CategoryPageSearchParams;
-};
+import CategoryPage from '../../components/CategoryPage';
 
-export default function CourierServicePage({ searchParams }: PageProps) {
-  return <CategoryPageTemplate categoryKey="courier-service" searchParams={searchParams} />;
+export default function CourierServicePage() {
+  return <CategoryPage categoryName="Courier Service" categorySlug="courier-service" />;
 }
-

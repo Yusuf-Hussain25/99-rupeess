@@ -122,9 +122,12 @@ export default function CategoryGrid() {
       try {
         const response = await fetch(`/api/categories?loc=${location.id}`);
         const data = await response.json();
+        console.log('Categories fetched:', data.categories?.length || 0, 'categories');
         setCategories(data.categories || []);
       } catch (error) {
         console.error('Error fetching categories:', error);
+        // Fallback to empty array on error
+        setCategories([]);
       } finally {
         setIsLoading(false);
       }
@@ -242,6 +245,18 @@ export default function CategoryGrid() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Show message if no categories
+  if (categories.length === 0) {
+    return (
+      <section className="py-6 sm:py-8 px-2 sm:px-3 lg:px-4 bg-white">
+        <div className="max-w-[98%] mx-auto">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-4">Top Categories</h2>
+          <p className="text-gray-600">No categories available. Please seed categories from the admin panel.</p>
         </div>
       </section>
     );

@@ -10,6 +10,10 @@ interface HeroBannerData {
   title?: string;
   ctaText?: string;
   advertiser?: string;
+  distance?: number;
+  isBusiness?: boolean;
+  userLat?: number | null;
+  userLng?: number | null;
 }
 
 interface HeroBannerProps {
@@ -56,6 +60,33 @@ export default function HeroBanner({ hero, onBannerClick, height = 'h-[480px]' }
         sizes="(max-width: 1024px) 100vw, 60vw"
       />
       <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/20 to-transparent" />
+      
+      {/* Distance and Time Badge */}
+      {(hero.distance !== undefined || hero.isBusiness) && (
+        <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20">
+          <div className="bg-white/95 backdrop-blur-md px-3 py-2 rounded-lg shadow-lg border border-white/50 flex flex-col gap-1.5">
+            <div className="flex items-center gap-2">
+              <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <span className="text-sm font-bold text-gray-900">
+                {hero.distance ? `${hero.distance.toFixed(1)} km` : 'Nearby'}
+              </span>
+            </div>
+            {hero.distance && (
+              <div className="flex items-center gap-2">
+                <svg className="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-sm font-bold text-gray-900">
+                  {Math.round(hero.distance * 1.5)} min
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,10 +1,7 @@
-import CategoryPageTemplate, { CategoryPageSearchParams } from '../CategoryPageTemplate';
+'use client';
 
-type PageProps = {
-  searchParams?: CategoryPageSearchParams;
-};
+import CategoryPage from '../../components/CategoryPage';
 
-export default function HomeDecorPage({ searchParams }: PageProps) {
-  return <CategoryPageTemplate categoryKey="home-decor" searchParams={searchParams} />;
+export default function HomeDecorPage() {
+  return <CategoryPage categoryName="Home Decor" categorySlug="home-decor" />;
 }
-

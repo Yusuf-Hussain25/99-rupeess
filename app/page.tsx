@@ -6,6 +6,8 @@ import CategoryGrid from "./components/CategoryGrid";
 import OffersStrip from "./components/OffersStrip";
 import FeaturedBusinesses from "./components/FeaturedBusinesses";
 import LatestOffers from "./components/LatestOffers";
+import TopRatedBusinesses from "./components/TopRatedBusinesses";
+import NewBusinesses from "./components/NewBusinesses";
 
 export default function Home() {
   return (
@@ -14,12 +16,17 @@ export default function Home() {
 
       <main className="max-w-[98%] mx-auto px-2 sm:px-3 lg:px-4 pt-0 pb-4 sm:pb-6">
         {/* Hero Section */}
-        <HeroSection />,{/* Categories Section */}
+        <HeroSection />
+        {/* Categories Section */}
         <CategoryGrid />
         {/* Offers Section */}
         <LatestOffers />
         {/* Featured Businesses */}
         <FeaturedBusinesses />
+        {/* Top Rated Businesses */}
+        <TopRatedBusinesses />
+        {/* New Businesses */}
+        <NewBusinesses />
       </main>
 
       {/* Footer */}

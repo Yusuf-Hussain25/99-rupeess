@@ -8,6 +8,7 @@ import RightRail from './hero/RightRail';
 import HeroBanner from './hero/HeroBanner';
 import BottomStrip from './hero/BottomStrip';
 import MobileRails from './hero/MobileRails';
+import BestDealsSlider from './hero/BestDealsSlider';
 
 interface HeroSectionProps {
   category?: string;
@@ -48,26 +49,32 @@ export default function HeroSection({ category }: HeroSectionProps) {
                 advertiser: heroData.banners[0].advertiser || heroData.banners[0].title,
               }
             : undefined,
-          left: (leftData.banners || []).map((banner: { id: string; imageUrl: string; title?: string; linkUrl: string }, index: number) => ({
+          left: (leftData.banners || []).map((banner: { id: string; imageUrl: string; title?: string; linkUrl: string; lat?: number; lng?: number }, index: number) => ({
             bannerId: banner.id,
             imageUrl: banner.imageUrl,
             alt: banner.title || `Left banner ${index + 1}`,
             link: banner.linkUrl,
             advertiser: banner.title,
+            lat: banner.lat,
+            lng: banner.lng,
           })),
-          right: (rightData.banners || []).map((banner: { id: string; imageUrl: string; title?: string; linkUrl: string }, index: number) => ({
+          right: (rightData.banners || []).map((banner: { id: string; imageUrl: string; title?: string; linkUrl: string; lat?: number; lng?: number }, index: number) => ({
             bannerId: banner.id,
             imageUrl: banner.imageUrl,
             alt: banner.title || `Right banner ${index + 1}`,
             link: banner.linkUrl,
             advertiser: banner.title,
+            lat: banner.lat,
+            lng: banner.lng,
           })),
-          bottom: (bottomData.banners || []).map((banner: { id: string; imageUrl: string; title?: string; linkUrl: string }, index: number) => ({
+          bottom: (bottomData.banners || []).map((banner: { id: string; imageUrl: string; title?: string; linkUrl: string; lat?: number; lng?: number }, index: number) => ({
             bannerId: banner.id,
             imageUrl: banner.imageUrl,
             alt: banner.title || `Bottom banner ${index + 1}`,
             link: banner.linkUrl,
             advertiser: banner.title,
+            lat: banner.lat,
+            lng: banner.lng,
           })),
         });
       } catch (error) {
@@ -151,6 +158,11 @@ export default function HeroSection({ category }: HeroSectionProps) {
     >
       {/* Parent Container - White Card */}
       <div className="bg-white rounded-xl sm:rounded-2xl shadow-md p-2 sm:p-2 md:p-3">
+        {/* BEST DEALS SLIDER - Full Width at Top */}
+        <div className="mb-4">
+          <BestDealsSlider category={category} />
+        </div>
+
         {/* Desktop: 3-Column Grid Layout */}
         <div className="hidden lg:grid lg:grid-cols-[20%_60%_20%] gap-3 md:gap-4 mb-4">
           {/* LEFT COLUMN (20%) */}

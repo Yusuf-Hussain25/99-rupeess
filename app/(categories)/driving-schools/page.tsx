@@ -1,10 +1,7 @@
-import CategoryPageTemplate, { CategoryPageSearchParams } from '../CategoryPageTemplate';
+'use client';
 
-type PageProps = {
-  searchParams?: CategoryPageSearchParams;
-};
+import CategoryPage from '../../components/CategoryPage';
 
-export default function DrivingSchoolsPage({ searchParams }: PageProps) {
-  return <CategoryPageTemplate categoryKey="driving-schools" searchParams={searchParams} />;
+export default function DrivingSchoolsPage() {
+  return <CategoryPage categoryName="Driving Schools" categorySlug="driving-schools" />;
 }
-

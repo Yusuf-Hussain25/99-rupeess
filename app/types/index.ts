@@ -34,6 +34,8 @@ export interface Banner {
   advertiser?: string;
   sponsored: boolean;
   position?: number;
+  lat?: number;
+  lng?: number;
 }
 
 export interface HeroSectionData {

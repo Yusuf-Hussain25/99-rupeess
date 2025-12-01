@@ -1,10 +1,7 @@
-import CategoryPageTemplate, { CategoryPageSearchParams } from '../CategoryPageTemplate';
+'use client';
 
-type PageProps = {
-  searchParams?: CategoryPageSearchParams;
-};
+import CategoryPage from '../../components/CategoryPage';
 
-export default function WeddingPlanningPage({ searchParams }: PageProps) {
-  return <CategoryPageTemplate categoryKey="wedding-planning" searchParams={searchParams} />;
+export default function WeddingPlanningPage() {
+  return <CategoryPage categoryName="Wedding Planning" categorySlug="wedding-planning" />;
 }
-

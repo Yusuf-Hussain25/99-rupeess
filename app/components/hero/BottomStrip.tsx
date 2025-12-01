@@ -9,6 +9,10 @@ interface Banner {
   alt: string;
   link: string;
   advertiser?: string;
+  lat?: number;
+  lng?: number;
+  distance?: number;
+  isBusiness?: boolean;
 }
 
 interface BottomStripProps {
@@ -171,24 +175,37 @@ export default function BottomStrip({ banners, onBannerClick }: BottomStripProps
           {[...Array(10)].map((_, index) => {
             const banner = row1[index];
             return banner ? (
-              <button
-                key={banner.bannerId}
-                onClick={() => onBannerClick(banner.bannerId, 'bottom', index, banner.link)}
-                className="inline-flex items-center justify-center h-16 md:h-18 px-3 rounded-md border border-gray-200 bg-white shadow-sm hover:scale-105 hover:shadow-md hover:border-blue-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 min-w-[100px] flex-1 max-w-[120px]"
-                aria-label={`Banner: ${banner.advertiser || 'Advertisement'} - Bottom slot ${index + 1}`}
-                data-banner-id={banner.bannerId}
-                data-section="bottom"
-                data-position={index}
-              >
-                <Image
-                  src={banner.imageUrl}
-                  alt={banner.alt}
-                  width={70}
-                  height={56}
-                  className="object-contain max-h-full max-w-full"
-                  loading="lazy"
-                />
-              </button>
+              <div key={banner.bannerId} className="relative group flex-1 max-w-[120px] min-w-[100px]">
+                <button
+                  onClick={() => onBannerClick(banner.bannerId, 'bottom', index, banner.link)}
+                  className="relative w-full inline-flex items-center justify-center h-16 md:h-18 px-3 rounded-md border border-gray-200 bg-white shadow-sm hover:scale-105 hover:shadow-md hover:border-blue-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 overflow-hidden"
+                  aria-label={`Banner: ${banner.advertiser || 'Advertisement'} - Bottom slot ${index + 1}`}
+                  data-banner-id={banner.bannerId}
+                  data-section="bottom"
+                  data-position={index}
+                >
+                  <Image
+                    src={banner.imageUrl}
+                    alt={banner.alt}
+                    width={70}
+                    height={56}
+                    className={`${banner.isBusiness ? 'object-cover' : 'object-contain'} max-h-full max-w-full`}
+                    loading="lazy"
+                  />
+                  {banner.isBusiness && (
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                  )}
+                </button>
+                {/* Distance and time badge for businesses */}
+                {banner.isBusiness && banner.distance !== undefined && (
+                  <div className="absolute top-1 right-1 z-10">
+                    <div className="bg-blue-600 text-white px-1 py-0.5 rounded text-[8px] font-bold shadow-lg flex flex-col items-center gap-0.5">
+                      <span>{banner.distance.toFixed(1)}km</span>
+                      <span className="text-[7px]">{Math.round(banner.distance * 1.5)}min</span>
+                    </div>
+                  </div>
+                )}
+              </div>
             ) : (
               <div key={`bottom-placeholder-${index}`} className="flex-1 max-w-[120px]">
                 {renderPlaceholder(index)}
@@ -202,24 +219,51 @@ export default function BottomStrip({ banners, onBannerClick }: BottomStripProps
             const banner = row2[index];
             const actualIndex = index + 10;
             return banner ? (
-              <button
-                key={banner.bannerId}
-                onClick={() => onBannerClick(banner.bannerId, 'bottom', actualIndex, banner.link)}
-                className="inline-flex items-center justify-center h-16 md:h-18 px-3 rounded-md border border-gray-200 bg-white shadow-sm hover:scale-105 hover:shadow-md hover:border-blue-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 min-w-[100px] flex-1 max-w-[120px]"
-                aria-label={`Banner: ${banner.advertiser || 'Advertisement'} - Bottom slot ${actualIndex + 1}`}
-                data-banner-id={banner.bannerId}
-                data-section="bottom"
-                data-position={actualIndex}
-              >
-                <Image
-                  src={banner.imageUrl}
-                  alt={banner.alt}
-                  width={70}
-                  height={56}
-                  className="object-contain max-h-full max-w-full"
-                  loading="lazy"
-                />
-              </button>
+              <div key={banner.bannerId} className="relative group flex-1 max-w-[120px] min-w-[100px]">
+                <button
+                  onClick={() => onBannerClick(banner.bannerId, 'bottom', actualIndex, banner.link)}
+                  className="relative w-full inline-flex items-center justify-center h-16 md:h-18 px-3 rounded-md border border-gray-200 bg-white shadow-sm hover:scale-105 hover:shadow-md hover:border-blue-400 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 overflow-hidden"
+                  aria-label={`Banner: ${banner.advertiser || 'Advertisement'} - Bottom slot ${actualIndex + 1}`}
+                  data-banner-id={banner.bannerId}
+                  data-section="bottom"
+                  data-position={actualIndex}
+                >
+                  <Image
+                    src={banner.imageUrl}
+                    alt={banner.alt}
+                    width={70}
+                    height={56}
+                    className={`${banner.isBusiness ? 'object-cover' : 'object-contain'} max-h-full max-w-full`}
+                    loading="lazy"
+                  />
+                  {banner.isBusiness && (
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                  )}
+                </button>
+                {/* Distance badge for businesses */}
+                {banner.isBusiness && banner.distance !== undefined && (
+                  <div className="absolute top-1 right-1 z-10">
+                    <div className="bg-blue-600 text-white px-1 py-0.5 rounded text-[8px] font-bold shadow-lg">
+                      {banner.distance.toFixed(1)}km
+                    </div>
+                  </div>
+                )}
+                {/* Call button overlay on hover for businesses */}
+                {banner.isBusiness && (
+                  <a
+                    href={banner.link}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onBannerClick(banner.bannerId, 'bottom', actualIndex, banner.link);
+                    }}
+                    className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-md flex items-center justify-center z-10"
+                  >
+                    <span className="bg-custom-gradient text-white px-2 py-1 rounded text-[10px] font-bold">
+                      Call
+                    </span>
+                  </a>
+                )}
+              </div>
             ) : (
               <div key={`bottom-placeholder-${actualIndex}`} className="flex-1 max-w-[120px]">
                 {renderPlaceholder(actualIndex)}
@@ -241,24 +285,37 @@ export default function BottomStrip({ banners, onBannerClick }: BottomStripProps
             {[...Array(5)].map((_, index) => {
               const banner = mobileRow1[index];
               return banner ? (
-                <button
-                  key={banner.bannerId}
-                  onClick={() => onBannerClick(banner.bannerId, 'bottom', index, banner.link)}
-                  className="inline-flex items-center justify-center h-10 sm:h-12 px-1 sm:px-1.5 rounded-md border border-gray-200 bg-white shadow-sm hover:scale-105 hover:shadow-md hover:border-blue-400 transition-all duration-150 focus:outline-none focus:ring-1 focus:ring-blue-500 min-w-[50px] sm:min-w-[60px] flex-1 max-w-[65px] sm:max-w-[75px]"
-                  aria-label={`Banner: ${banner.advertiser || 'Advertisement'} - Bottom slot ${index + 1}`}
-                  data-banner-id={banner.bannerId}
-                  data-section="bottom"
-                  data-position={index}
-                >
-                  <Image
-                    src={banner.imageUrl}
-                    alt={banner.alt}
-                    width={35}
-                    height={28}
-                    className="object-contain max-h-full max-w-full"
-                    loading="lazy"
-                  />
-                </button>
+                <div key={banner.bannerId} className="relative group flex-1 max-w-[65px] sm:max-w-[75px] min-w-[50px] sm:min-w-[60px]">
+                  <button
+                    onClick={() => onBannerClick(banner.bannerId, 'bottom', index, banner.link)}
+                    className="relative w-full inline-flex items-center justify-center h-10 sm:h-12 px-1 sm:px-1.5 rounded-md border border-gray-200 bg-white shadow-sm hover:scale-105 hover:shadow-md hover:border-blue-400 transition-all duration-150 focus:outline-none focus:ring-1 focus:ring-blue-500 overflow-hidden"
+                    aria-label={`Banner: ${banner.advertiser || 'Advertisement'} - Bottom slot ${index + 1}`}
+                    data-banner-id={banner.bannerId}
+                    data-section="bottom"
+                    data-position={index}
+                  >
+                    <Image
+                      src={banner.imageUrl}
+                      alt={banner.alt}
+                      width={35}
+                      height={28}
+                      className={`${banner.isBusiness ? 'object-cover' : 'object-contain'} max-h-full max-w-full`}
+                      loading="lazy"
+                    />
+                    {banner.isBusiness && (
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                    )}
+                  </button>
+                  {/* Distance and time badge for businesses */}
+                  {banner.isBusiness && banner.distance !== undefined && (
+                    <div className="absolute top-0.5 right-0.5 z-10">
+                      <div className="bg-blue-600 text-white px-0.5 py-0 rounded text-[6px] font-bold shadow-lg flex flex-col items-center gap-0">
+                        <span>{banner.distance.toFixed(1)}</span>
+                        <span className="text-[5px]">{Math.round(banner.distance * 1.5)}m</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
               ) : (
                 <div key={`bottom-placeholder-${index}`} className="flex-1 max-w-[65px] sm:max-w-[75px]">
                   <div
@@ -280,24 +337,37 @@ export default function BottomStrip({ banners, onBannerClick }: BottomStripProps
               const banner = mobileRow2[index];
               const actualIndex = index + 5;
               return banner ? (
-                <button
-                  key={banner.bannerId}
-                  onClick={() => onBannerClick(banner.bannerId, 'bottom', actualIndex, banner.link)}
-                  className="inline-flex items-center justify-center h-10 sm:h-12 px-1 sm:px-1.5 rounded-md border border-gray-200 bg-white shadow-sm hover:scale-105 hover:shadow-md hover:border-blue-400 transition-all duration-150 focus:outline-none focus:ring-1 focus:ring-blue-500 min-w-[50px] sm:min-w-[60px] flex-1 max-w-[65px] sm:max-w-[75px]"
-                  aria-label={`Banner: ${banner.advertiser || 'Advertisement'} - Bottom slot ${actualIndex + 1}`}
-                  data-banner-id={banner.bannerId}
-                  data-section="bottom"
-                  data-position={actualIndex}
-                >
-                  <Image
-                    src={banner.imageUrl}
-                    alt={banner.alt}
-                    width={35}
-                    height={28}
-                    className="object-contain max-h-full max-w-full"
-                    loading="lazy"
-                  />
-                </button>
+                <div key={banner.bannerId} className="relative group flex-1 max-w-[65px] sm:max-w-[75px] min-w-[50px] sm:min-w-[60px]">
+                  <button
+                    onClick={() => onBannerClick(banner.bannerId, 'bottom', actualIndex, banner.link)}
+                    className="relative w-full inline-flex items-center justify-center h-10 sm:h-12 px-1 sm:px-1.5 rounded-md border border-gray-200 bg-white shadow-sm hover:scale-105 hover:shadow-md hover:border-blue-400 transition-all duration-150 focus:outline-none focus:ring-1 focus:ring-blue-500 overflow-hidden"
+                    aria-label={`Banner: ${banner.advertiser || 'Advertisement'} - Bottom slot ${actualIndex + 1}`}
+                    data-banner-id={banner.bannerId}
+                    data-section="bottom"
+                    data-position={actualIndex}
+                  >
+                    <Image
+                      src={banner.imageUrl}
+                      alt={banner.alt}
+                      width={35}
+                      height={28}
+                      className={`${banner.isBusiness ? 'object-cover' : 'object-contain'} max-h-full max-w-full`}
+                      loading="lazy"
+                    />
+                    {banner.isBusiness && (
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                    )}
+                  </button>
+                  {/* Distance and time badge for businesses */}
+                  {banner.isBusiness && banner.distance !== undefined && (
+                    <div className="absolute top-0.5 right-0.5 z-10">
+                      <div className="bg-blue-600 text-white px-0.5 py-0 rounded text-[6px] font-bold shadow-lg flex flex-col items-center gap-0">
+                        <span>{banner.distance.toFixed(1)}</span>
+                        <span className="text-[5px]">{Math.round(banner.distance * 1.5)}m</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
               ) : (
                 <div key={`bottom-placeholder-${actualIndex}`} className="flex-1 max-w-[65px] sm:max-w-[75px]">
                   <div
@@ -319,24 +389,37 @@ export default function BottomStrip({ banners, onBannerClick }: BottomStripProps
               const banner = mobileRow3[index];
               const actualIndex = index + 10;
               return banner ? (
-                <button
-                  key={banner.bannerId}
-                  onClick={() => onBannerClick(banner.bannerId, 'bottom', actualIndex, banner.link)}
-                  className="inline-flex items-center justify-center h-10 sm:h-12 px-1 sm:px-1.5 rounded-md border border-gray-200 bg-white shadow-sm hover:scale-105 hover:shadow-md hover:border-blue-400 transition-all duration-150 focus:outline-none focus:ring-1 focus:ring-blue-500 min-w-[50px] sm:min-w-[60px] flex-1 max-w-[65px] sm:max-w-[75px]"
-                  aria-label={`Banner: ${banner.advertiser || 'Advertisement'} - Bottom slot ${actualIndex + 1}`}
-                  data-banner-id={banner.bannerId}
-                  data-section="bottom"
-                  data-position={actualIndex}
-                >
-                  <Image
-                    src={banner.imageUrl}
-                    alt={banner.alt}
-                    width={35}
-                    height={28}
-                    className="object-contain max-h-full max-w-full"
-                    loading="lazy"
-                  />
-                </button>
+                <div key={banner.bannerId} className="relative group flex-1 max-w-[65px] sm:max-w-[75px] min-w-[50px] sm:min-w-[60px]">
+                  <button
+                    onClick={() => onBannerClick(banner.bannerId, 'bottom', actualIndex, banner.link)}
+                    className="relative w-full inline-flex items-center justify-center h-10 sm:h-12 px-1 sm:px-1.5 rounded-md border border-gray-200 bg-white shadow-sm hover:scale-105 hover:shadow-md hover:border-blue-400 transition-all duration-150 focus:outline-none focus:ring-1 focus:ring-blue-500 overflow-hidden"
+                    aria-label={`Banner: ${banner.advertiser || 'Advertisement'} - Bottom slot ${actualIndex + 1}`}
+                    data-banner-id={banner.bannerId}
+                    data-section="bottom"
+                    data-position={actualIndex}
+                  >
+                    <Image
+                      src={banner.imageUrl}
+                      alt={banner.alt}
+                      width={35}
+                      height={28}
+                      className={`${banner.isBusiness ? 'object-cover' : 'object-contain'} max-h-full max-w-full`}
+                      loading="lazy"
+                    />
+                    {banner.isBusiness && (
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                    )}
+                  </button>
+                  {/* Distance and time badge for businesses */}
+                  {banner.isBusiness && banner.distance !== undefined && (
+                    <div className="absolute top-0.5 right-0.5 z-10">
+                      <div className="bg-blue-600 text-white px-0.5 py-0 rounded text-[6px] font-bold shadow-lg flex flex-col items-center gap-0">
+                        <span>{banner.distance.toFixed(1)}</span>
+                        <span className="text-[5px]">{Math.round(banner.distance * 1.5)}m</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
               ) : (
                 <div key={`bottom-placeholder-${actualIndex}`} className="flex-1 max-w-[65px] sm:max-w-[75px]">
                   <div
@@ -358,24 +441,37 @@ export default function BottomStrip({ banners, onBannerClick }: BottomStripProps
               const banner = mobileRow4[index];
               const actualIndex = index + 15;
               return banner ? (
-                <button
-                  key={banner.bannerId}
-                  onClick={() => onBannerClick(banner.bannerId, 'bottom', actualIndex, banner.link)}
-                  className="inline-flex items-center justify-center h-10 sm:h-12 px-1 sm:px-1.5 rounded-md border border-gray-200 bg-white shadow-sm hover:scale-105 hover:shadow-md hover:border-blue-400 transition-all duration-150 focus:outline-none focus:ring-1 focus:ring-blue-500 min-w-[50px] sm:min-w-[60px] flex-1 max-w-[65px] sm:max-w-[75px]"
-                  aria-label={`Banner: ${banner.advertiser || 'Advertisement'} - Bottom slot ${actualIndex + 1}`}
-                  data-banner-id={banner.bannerId}
-                  data-section="bottom"
-                  data-position={actualIndex}
-                >
-                  <Image
-                    src={banner.imageUrl}
-                    alt={banner.alt}
-                    width={35}
-                    height={28}
-                    className="object-contain max-h-full max-w-full"
-                    loading="lazy"
-                  />
-                </button>
+                <div key={banner.bannerId} className="relative group flex-1 max-w-[65px] sm:max-w-[75px] min-w-[50px] sm:min-w-[60px]">
+                  <button
+                    onClick={() => onBannerClick(banner.bannerId, 'bottom', actualIndex, banner.link)}
+                    className="relative w-full inline-flex items-center justify-center h-10 sm:h-12 px-1 sm:px-1.5 rounded-md border border-gray-200 bg-white shadow-sm hover:scale-105 hover:shadow-md hover:border-blue-400 transition-all duration-150 focus:outline-none focus:ring-1 focus:ring-blue-500 overflow-hidden"
+                    aria-label={`Banner: ${banner.advertiser || 'Advertisement'} - Bottom slot ${actualIndex + 1}`}
+                    data-banner-id={banner.bannerId}
+                    data-section="bottom"
+                    data-position={actualIndex}
+                  >
+                    <Image
+                      src={banner.imageUrl}
+                      alt={banner.alt}
+                      width={35}
+                      height={28}
+                      className={`${banner.isBusiness ? 'object-cover' : 'object-contain'} max-h-full max-w-full`}
+                      loading="lazy"
+                    />
+                    {banner.isBusiness && (
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                    )}
+                  </button>
+                  {/* Distance and time badge for businesses */}
+                  {banner.isBusiness && banner.distance !== undefined && (
+                    <div className="absolute top-0.5 right-0.5 z-10">
+                      <div className="bg-blue-600 text-white px-0.5 py-0 rounded text-[6px] font-bold shadow-lg flex flex-col items-center gap-0">
+                        <span>{banner.distance.toFixed(1)}</span>
+                        <span className="text-[5px]">{Math.round(banner.distance * 1.5)}m</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
               ) : (
                 <div key={`bottom-placeholder-${actualIndex}`} className="flex-1 max-w-[65px] sm:max-w-[75px]">
                   <div

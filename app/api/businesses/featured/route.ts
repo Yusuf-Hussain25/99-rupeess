@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { BusinessSummary } from '@/app/types';
 
+// Revalidate every 5 minutes
+export const revalidate = 300;
+
 const featured: BusinessSummary[] = [
   {
     id: 'b1',
@@ -65,5 +68,9 @@ const featured: BusinessSummary[] = [
 ];
 
 export async function GET(req: NextRequest) {
-  return NextResponse.json({ businesses: featured });
+  return NextResponse.json({ businesses: featured }, {
+    headers: {
+      'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600'
+    }
+  });
 }

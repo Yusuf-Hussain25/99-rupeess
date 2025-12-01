@@ -1,10 +1,7 @@
-import CategoryPageTemplate, { CategoryPageSearchParams } from '../CategoryPageTemplate';
+'use client';
 
-type PageProps = {
-  searchParams?: CategoryPageSearchParams;
-};
+import CategoryPage from '../../components/CategoryPage';
 
-export default function DentistsPage({ searchParams }: PageProps) {
-  return <CategoryPageTemplate categoryKey="dentists" searchParams={searchParams} />;
+export default function DentistsPage() {
+  return <CategoryPage categoryName="Dentists" categorySlug="dentists" />;
 }
-

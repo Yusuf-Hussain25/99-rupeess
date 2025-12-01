@@ -105,7 +105,7 @@ function getShopCoordinates(shopName: string): { lat: number; lng: number } | nu
 
 /**
  * Get distance for a specific banner
- * @param banner - Banner object with imageUrl
+ * @param banner - Banner object with imageUrl, lat, lng
  * @param userLat - User's latitude
  * @param userLng - User's longitude
  * @returns Distance in kilometers or null if not found
@@ -117,6 +117,18 @@ export function getBannerDistance(
 ): number | null {
   if (userLat === null || userLng === null) return null;
   
+  // First, try to use lat/lng directly from banner (preferred)
+  if (banner.lat !== undefined && banner.lng !== undefined && 
+      banner.lat !== null && banner.lng !== null) {
+    return calculateDistance(
+      userLat,
+      userLng,
+      banner.lat,
+      banner.lng
+    );
+  }
+  
+  // Fallback to shop.json lookup
   const shopName = extractShopNameFromImage(banner.imageUrl);
   if (!shopName) return null;
   
@@ -150,8 +162,20 @@ export function sortBannersByDistance(
 
   // Map banners with distances
   const bannersWithDistance: BannerWithDistance[] = banners.map(banner => {
-    const shopName = extractShopNameFromImage(banner.imageUrl);
+    // First, try to use lat/lng directly from banner (preferred)
+    if (banner.lat !== undefined && banner.lng !== undefined && 
+        banner.lat !== null && banner.lng !== null) {
+      const distance = calculateDistance(
+        userLat,
+        userLng,
+        banner.lat,
+        banner.lng
+      );
+      return { banner, distance };
+    }
     
+    // Fallback to shop.json lookup
+    const shopName = extractShopNameFromImage(banner.imageUrl);
     if (shopName) {
       const shopCoords = getShopCoordinates(shopName);
       if (shopCoords) {

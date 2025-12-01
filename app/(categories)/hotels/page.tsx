@@ -1,10 +1,7 @@
-import CategoryPageTemplate, { CategoryPageSearchParams } from '../CategoryPageTemplate';
+'use client';
 
-type PageProps = {
-  searchParams?: CategoryPageSearchParams;
-};
+import CategoryPage from '../../components/CategoryPage';
 
-export default function HotelsPage({ searchParams }: PageProps) {
-  return <CategoryPageTemplate categoryKey="hotels" searchParams={searchParams} />;
+export default function HotelsPage() {
+  return <CategoryPage categoryName="Hotels" categorySlug="hotels" />;
 }
-

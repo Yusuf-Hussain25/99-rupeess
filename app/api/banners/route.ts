@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import type { Banner } from '@/app/types';
+import connectDB from '@/lib/mongodb';
+import Banner from '@/models/Banner';
+import type { Banner as BannerType } from '@/app/types';
 
-// Mock data - replace with actual database query
-const mockBanners: Banner[] = [
+// Fallback mock data - used only if database is empty
+const mockBanners: BannerType[] = [
   // Hero banners
   {
     id: 'hero-1',
@@ -310,21 +312,82 @@ const mockBanners: Banner[] = [
   },
 ];
 
+// Revalidate every 5 minutes
+export const revalidate = 300;
+
 export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
-  const section = searchParams.get('section') as Banner['section'] | null;
-  const loc = searchParams.get('loc');
-  const cat = searchParams.get('cat');
-  const limit = parseInt(searchParams.get('limit') || '10');
+  try {
+    await connectDB();
 
-  // Filter by section if provided
-  let banners = section
-    ? mockBanners.filter((b) => b.section === section)
-    : mockBanners;
+    const searchParams = request.nextUrl.searchParams;
+    const section = searchParams.get('section') as BannerType['section'] | null;
+    const loc = searchParams.get('loc'); // location ID
+    const area = searchParams.get('area');
+    const pincode = searchParams.get('pincode');
+    const limit = parseInt(searchParams.get('limit') || '10');
 
-  // In a real app, filter by location and category
-  // Apply limit
-  banners = banners.slice(0, limit);
+    // Build query
+    const query: any = { isActive: true };
+    if (section) query.section = section;
+    if (loc) query.locationId = loc;
+    if (area) query.area = area;
+    if (pincode) query.pincode = parseInt(pincode);
 
-  return NextResponse.json({ banners });
+    // Fetch from database
+    let dbBanners = await Banner.find(query)
+      .sort({ section: 1, order: 1, createdAt: -1 })
+      .limit(limit)
+      .lean();
+
+    // If no banners found in DB, use mock data as fallback
+    if (dbBanners.length === 0 && !section && !loc && !area && !pincode) {
+      let banners = mockBanners;
+      if (section) {
+        banners = banners.filter((b) => b.section === section);
+      }
+      banners = banners.slice(0, limit);
+      return NextResponse.json({ banners });
+    }
+
+    // Convert database banners to API format
+    const banners: BannerType[] = dbBanners.map((banner: any) => ({
+      id: banner._id.toString(),
+      section: banner.section,
+      imageUrl: banner.imageUrl,
+      title: banner.title,
+      cta: banner.cta,
+      ctaText: banner.ctaText,
+      linkUrl: banner.linkUrl,
+      link: banner.linkUrl,
+      alt: banner.alt,
+      advertiser: banner.advertiser,
+      sponsored: banner.sponsored || false,
+      position: banner.position,
+      lat: banner.lat,
+      lng: banner.lng,
+    }));
+
+    return NextResponse.json({ banners }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600'
+      }
+    });
+  } catch (error: any) {
+    console.error('Error fetching banners:', error);
+    // Fallback to mock data on error
+    const searchParams = request.nextUrl.searchParams;
+    const section = searchParams.get('section') as BannerType['section'] | null;
+    const limit = parseInt(searchParams.get('limit') || '10');
+    
+    let banners = mockBanners;
+    if (section) {
+      banners = banners.filter((b) => b.section === section);
+    }
+    banners = banners.slice(0, limit);
+    return NextResponse.json({ banners }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600'
+      }
+    });
+  }
 }

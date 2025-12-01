@@ -1,10 +1,7 @@
-import CategoryPageTemplate, { CategoryPageSearchParams } from '../CategoryPageTemplate';
+'use client';
 
-type PageProps = {
-  searchParams?: CategoryPageSearchParams;
-};
+import CategoryPage from '../../components/CategoryPage';
 
-export default function RentHirePage({ searchParams }: PageProps) {
-  return <CategoryPageTemplate categoryKey="rent-hire" searchParams={searchParams} />;
+export default function RentHirePage() {
+  return <CategoryPage categoryName="Rent & Hire" categorySlug="rent-hire" />;
 }
-

@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { Offer } from '@/app/types';
 
+// Revalidate every 2 minutes (offers change more frequently)
+export const revalidate = 120;
+
 // Mock data - replace with actual database query
 const mockOffers: Offer[] = [
   {
@@ -86,6 +89,10 @@ export async function GET(request: NextRequest) {
   // For now, return all offers
   const offers = mockOffers;
 
-  return NextResponse.json({ offers });
+  return NextResponse.json({ offers }, {
+    headers: {
+      'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=300'
+    }
+  });
 }
 

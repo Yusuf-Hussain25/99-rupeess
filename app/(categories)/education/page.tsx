@@ -1,10 +1,7 @@
-import CategoryPageTemplate, { CategoryPageSearchParams } from '../CategoryPageTemplate';
+'use client';
 
-type PageProps = {
-  searchParams?: CategoryPageSearchParams;
-};
+import CategoryPage from '../../components/CategoryPage';
 
-export default function EducationPage({ searchParams }: PageProps) {
-  return <CategoryPageTemplate categoryKey="education" searchParams={searchParams} />;
+export default function EducationPage() {
+  return <CategoryPage categoryName="Education" categorySlug="education" />;
 }
-

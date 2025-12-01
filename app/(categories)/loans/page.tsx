@@ -1,10 +1,7 @@
-import CategoryPageTemplate, { CategoryPageSearchParams } from '../CategoryPageTemplate';
+'use client';
 
-type PageProps = {
-  searchParams?: CategoryPageSearchParams;
-};
+import CategoryPage from '../../components/CategoryPage';
 
-export default function LoansPage({ searchParams }: PageProps) {
-  return <CategoryPageTemplate categoryKey="loans" searchParams={searchParams} />;
+export default function LoansPage() {
+  return <CategoryPage categoryName="Loans" categorySlug="loans" />;
 }
-
