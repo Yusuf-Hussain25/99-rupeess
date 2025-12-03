@@ -102,11 +102,18 @@ export default function AdminLayout({
 
   const navigation = [
     { name: 'Dashboard', href: '/admin', icon: '📊' },
-    { name: 'Banners', href: '/admin/banners', icon: '🖼️' },
-    { name: 'Categories', href: '/admin/categories', icon: '📁' },
+    { name: 'Analytics', href: '/admin/analytics', icon: '📈' },
+    { name: 'Homepage', href: '/admin/homepage', icon: '🏠' },
     { name: 'Businesses', href: '/admin/businesses', icon: '🏪' },
+    { name: 'Categories', href: '/admin/categories', icon: '📁' },
+    { name: 'Banners', href: '/admin/banners', icon: '🖼️' },
+    { name: 'Offers', href: '/admin/offers', icon: '🎁' },
+    { name: 'Pages', href: '/admin/pages', icon: '📄' },
     { name: 'Locations', href: '/admin/locations', icon: '📍' },
     { name: 'Location Images', href: '/admin/location-images', icon: '🖼️' },
+    { name: 'Distance Config', href: '/admin/distance', icon: '📏' },
+    { name: 'Inbox', href: '/admin/inbox', icon: '📧' },
+    { name: 'Users', href: '/admin/users', icon: '👥' },
   ];
 
   const isActive = (href: string) => {

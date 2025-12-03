@@ -4,10 +4,11 @@ import { requireAdmin } from '@/lib/auth';
 import Page from '@/models/Page';
 
 // GET, PUT, DELETE for single page
-export const GET = requireAdmin(async (request: NextRequest, { params }: { params: { id: string } }) => {
+export const GET = requireAdmin(async (request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
   try {
     await connectDB();
-    const page = await Page.findById(params.id).lean();
+    const { id } = await params;
+    const page = await Page.findById(id).lean();
     if (!page) return NextResponse.json({ error: 'Page not found' }, { status: 404 });
     return NextResponse.json({ success: true, page }, { status: 200 });
   } catch (error: any) {
@@ -15,9 +16,10 @@ export const GET = requireAdmin(async (request: NextRequest, { params }: { param
   }
 });
 
-export const PUT = requireAdmin(async (request: NextRequest, { params }: { params: { id: string } }) => {
+export const PUT = requireAdmin(async (request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
   try {
     await connectDB();
+    const { id } = await params;
     const body = await request.json();
     const { title, slug, content, seoTitle, seoDescription, isPublished } = body;
 
@@ -29,7 +31,7 @@ export const PUT = requireAdmin(async (request: NextRequest, { params }: { param
     if (seoDescription !== undefined) updateData.seoDescription = seoDescription;
     if (isPublished !== undefined) updateData.isPublished = isPublished;
 
-    const page = await Page.findByIdAndUpdate(params.id, updateData, { new: true, runValidators: true });
+    const page = await Page.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
     if (!page) return NextResponse.json({ error: 'Page not found' }, { status: 404 });
     return NextResponse.json({ success: true, page }, { status: 200 });
   } catch (error: any) {
@@ -40,10 +42,11 @@ export const PUT = requireAdmin(async (request: NextRequest, { params }: { param
   }
 });
 
-export const DELETE = requireAdmin(async (request: NextRequest, { params }: { params: { id: string } }) => {
+export const DELETE = requireAdmin(async (request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
   try {
     await connectDB();
-    const page = await Page.findByIdAndDelete(params.id);
+    const { id } = await params;
+    const page = await Page.findByIdAndDelete(id);
     if (!page) return NextResponse.json({ error: 'Page not found' }, { status: 404 });
     return NextResponse.json({ success: true, message: 'Page deleted successfully' }, { status: 200 });
   } catch (error: any) {

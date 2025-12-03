@@ -50,10 +50,10 @@ export function requireAuth(
   };
 }
 
-export function requireAdmin(
-  handler: (request: NextRequest, user: JWTPayload) => Promise<NextResponse>
+export function requireAdmin<T = any>(
+  handler: (request: NextRequest, context: T) => Promise<NextResponse>
 ) {
-  return async (request: NextRequest) => {
+  return async (request: NextRequest, context: T) => {
     const { user, error } = authenticateRequest(request);
 
     if (!user || error) {
@@ -70,7 +70,7 @@ export function requireAdmin(
       );
     }
 
-    return handler(request, user);
+    return handler(request, context);
   };
 }
 
