@@ -4,11 +4,11 @@ import { requireAdmin } from '@/lib/auth';
 import Banner from '@/models/Banner';
 
 // GET - Fetch single banner
-export const GET = requireAdmin(async (request: NextRequest, { params }: { params: { id: string } }) => {
+export const GET = requireAdmin(async (request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
   try {
     await connectDB();
-
-    const banner = await Banner.findById(params.id).lean();
+    const { id } = await params;
+    const banner = await Banner.findById(id).lean();
 
     if (!banner) {
       return NextResponse.json(
@@ -28,10 +28,10 @@ export const GET = requireAdmin(async (request: NextRequest, { params }: { param
 });
 
 // PUT - Update banner
-export const PUT = requireAdmin(async (request: NextRequest, { params }: { params: { id: string } }) => {
+export const PUT = requireAdmin(async (request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
   try {
     await connectDB();
-
+    const { id } = await params;
     const body = await request.json();
     const {
       section,
@@ -73,7 +73,7 @@ export const PUT = requireAdmin(async (request: NextRequest, { params }: { param
     if (order !== undefined) updateData.order = order;
 
     const banner = await Banner.findByIdAndUpdate(
-      params.id,
+      id,
       updateData,
       { new: true, runValidators: true }
     );
@@ -99,11 +99,11 @@ export const PUT = requireAdmin(async (request: NextRequest, { params }: { param
 });
 
 // DELETE - Delete banner
-export const DELETE = requireAdmin(async (request: NextRequest, { params }: { params: { id: string } }) => {
+export const DELETE = requireAdmin(async (request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
   try {
     await connectDB();
-
-    const banner = await Banner.findByIdAndDelete(params.id);
+    const { id } = await params;
+    const banner = await Banner.findByIdAndDelete(id);
 
     if (!banner) {
       return NextResponse.json(

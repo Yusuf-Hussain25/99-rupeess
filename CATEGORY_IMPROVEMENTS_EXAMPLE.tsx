@@ -8,7 +8,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import type { Category } from '../types';
+import type { Category } from '@/app/types';
 
 // Add these state variables to CategoryGrid component
 export function EnhancedCategoryGridExample() {

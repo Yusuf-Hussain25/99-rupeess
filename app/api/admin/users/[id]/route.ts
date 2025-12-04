@@ -4,10 +4,11 @@ import { requireAdmin } from '@/lib/auth';
 import User from '@/models/User';
 
 // GET - Get single user
-export const GET = requireAdmin(async (request: NextRequest, { params }: { params: { id: string } }) => {
+export const GET = requireAdmin(async (request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
   try {
     await connectDB();
-    const user = await User.findById(params.id).select('-password').lean();
+    const { id } = await params;
+    const user = await User.findById(id).select('-password').lean();
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
     return NextResponse.json({ success: true, user }, { status: 200 });
   } catch (error: any) {
@@ -16,9 +17,10 @@ export const GET = requireAdmin(async (request: NextRequest, { params }: { param
 });
 
 // PUT - Update user
-export const PUT = requireAdmin(async (request: NextRequest, { params }: { params: { id: string } }) => {
+export const PUT = requireAdmin(async (request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
   try {
     await connectDB();
+    const { id } = await params;
     const body = await request.json();
     const { name, email, phone, role, isEmailVerified } = body;
 
@@ -29,7 +31,7 @@ export const PUT = requireAdmin(async (request: NextRequest, { params }: { param
     if (role !== undefined) updateData.role = role;
     if (isEmailVerified !== undefined) updateData.isEmailVerified = isEmailVerified;
 
-    const user = await User.findByIdAndUpdate(params.id, updateData, { new: true, runValidators: true })
+    const user = await User.findByIdAndUpdate(id, updateData, { new: true, runValidators: true })
       .select('-password');
 
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
@@ -43,10 +45,11 @@ export const PUT = requireAdmin(async (request: NextRequest, { params }: { param
 });
 
 // DELETE - Delete user
-export const DELETE = requireAdmin(async (request: NextRequest, { params }: { params: { id: string } }) => {
+export const DELETE = requireAdmin(async (request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
   try {
     await connectDB();
-    const user = await User.findByIdAndDelete(params.id);
+    const { id } = await params;
+    const user = await User.findByIdAndDelete(id);
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
     return NextResponse.json({ success: true, message: 'User deleted successfully' }, { status: 200 });
   } catch (error: any) {

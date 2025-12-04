@@ -12,6 +12,7 @@ interface Banner {
   imageUrl: string;
   title?: string;
   linkUrl: string;
+  alt?: string;
   lat?: number;
   lng?: number;
   area?: string;
@@ -198,7 +199,7 @@ export default function HomepagePage() {
         const sections: Array<'hero' | 'left' | 'right' | 'top' | 'bottom'> = ['hero', 'left', 'right', 'top', 'bottom'];
         for (const section of sections) {
           for (const banner of banners[section]) {
-            const { _id, createdAt, updatedAt, ...bannerData } = banner;
+            const { _id, createdAt, updatedAt, ...bannerData } = banner as any;
             await fetch('/api/admin/banners', {
               method: 'POST',
               headers: {

@@ -36,7 +36,7 @@ interface JsonBusiness {
   pincode: string;
 }
 
-export const POST = requireAdmin(async (request: NextRequest, user) => {
+export const POST = requireAdmin(async (request: NextRequest) => {
   try {
     await connectDB();
 
@@ -76,7 +76,6 @@ export const POST = requireAdmin(async (request: NextRequest, user) => {
         Object.keys(JSON_TO_CATEGORY_MAP).find(key => JSON_TO_CATEGORY_MAP[key] === targetCategorySlug),
       ].filter(Boolean) as string[];
 
-      let found = false;
       for (const altName of alternativeNames) {
         const altPath = path.join(process.cwd(), 'app', altName);
         if (fs.existsSync(altPath)) {
@@ -147,12 +146,10 @@ export const POST = requireAdmin(async (request: NextRequest, user) => {
         }
       }
 
-      if (!found) {
-        return NextResponse.json(
-          { error: `JSON file not found. Tried: ${alternativeNames.join(', ')}` },
-          { status: 404 }
-        );
-      }
+      return NextResponse.json(
+        { error: `JSON file not found. Tried: ${alternativeNames.join(', ')}` },
+        { status: 404 }
+      );
     } else {
       const fileContent = fs.readFileSync(jsonFilePath, 'utf-8');
       const businesses: JsonBusiness[] = JSON.parse(fileContent);
@@ -231,7 +228,7 @@ export const POST = requireAdmin(async (request: NextRequest, user) => {
 /**
  * Import all businesses from all JSON files
  */
-export const PUT = requireAdmin(async (request: NextRequest, user) => {
+export const PUT = requireAdmin(async (request: NextRequest) => {
   try {
     await connectDB();
 

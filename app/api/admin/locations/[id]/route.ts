@@ -4,11 +4,11 @@ import { requireAdmin } from '@/lib/auth';
 import Location from '@/models/Location';
 
 // GET - Fetch single location
-export const GET = requireAdmin(async (request: NextRequest, { params }: { params: { id: string } }) => {
+export const GET = requireAdmin(async (request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
   try {
     await connectDB();
-
-    const location = await Location.findById(params.id).lean();
+    const { id } = await params;
+    const location = await Location.findById(id).lean();
 
     if (!location) {
       return NextResponse.json(
@@ -28,10 +28,10 @@ export const GET = requireAdmin(async (request: NextRequest, { params }: { param
 });
 
 // PUT - Update location
-export const PUT = requireAdmin(async (request: NextRequest, { params }: { params: { id: string } }) => {
+export const PUT = requireAdmin(async (request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
   try {
     await connectDB();
-
+    const { id } = await params;
     const body = await request.json();
     const {
       city,
@@ -59,7 +59,7 @@ export const PUT = requireAdmin(async (request: NextRequest, { params }: { param
     if (isActive !== undefined) updateData.isActive = isActive;
 
     const location = await Location.findByIdAndUpdate(
-      params.id,
+      id,
       updateData,
       { new: true, runValidators: true }
     );
@@ -85,11 +85,11 @@ export const PUT = requireAdmin(async (request: NextRequest, { params }: { param
 });
 
 // DELETE - Delete location
-export const DELETE = requireAdmin(async (request: NextRequest, { params }: { params: { id: string } }) => {
+export const DELETE = requireAdmin(async (request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
   try {
     await connectDB();
-
-    const location = await Location.findByIdAndDelete(params.id);
+    const { id } = await params;
+    const location = await Location.findByIdAndDelete(id);
 
     if (!location) {
       return NextResponse.json(

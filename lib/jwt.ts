@@ -7,6 +7,9 @@ if (!JWT_SECRET) {
   throw new Error('Please define the JWT_SECRET environment variable inside .env.local');
 }
 
+// Type assertion for TypeScript - we've already checked above
+const JWT_SECRET_STRING = JWT_SECRET as string;
+
 export interface JWTPayload {
   userId: string;
   email: string;
@@ -14,14 +17,14 @@ export interface JWTPayload {
 }
 
 export function generateToken(payload: JWTPayload): string {
-  return jwt.sign(payload, JWT_SECRET, {
+  return jwt.sign(payload, JWT_SECRET_STRING!, {
     expiresIn: JWT_EXPIRES_IN,
-  });
+  } as jwt.SignOptions);
 }
 
 export function verifyToken(token: string): JWTPayload {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
+    const decoded = jwt.verify(token, JWT_SECRET_STRING!) as JWTPayload;
     return decoded;
   } catch (error) {
     throw new Error('Invalid or expired token');
