@@ -10,6 +10,8 @@ import CategoryLeftRail from './category/CategoryLeftRail';
 import CategoryRightRail from './category/CategoryRightRail';
 import CategoryHeroBanner from './category/CategoryHeroBanner';
 import CategoryBottomStrip from './category/CategoryBottomStrip';
+import MobileBusinessCard from './category/MobileBusinessCard';
+import MobileBusinessList from './category/MobileBusinessList';
 
 type CategoryListing = BusinessSummary & {
   distance?: number;
@@ -373,33 +375,33 @@ export default function CategoryPage({ categoryName, categorySlug }: CategoryPag
       <Navbar />
       
       <main className="max-w-[98%] mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-8">
-        {/* Breadcrumb Navigation */}
-        <nav className="text-sm text-gray-600 mb-4 flex items-center gap-2">
+        {/* Breadcrumb Navigation - Mobile Optimized */}
+        <nav className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4 flex items-center gap-1.5 sm:gap-2">
           <a href="/" className="hover:text-amber-600 transition-colors">Home</a>
           <span>/</span>
           <a href="/" className="hover:text-amber-600 transition-colors">Categories</a>
           <span>/</span>
-          <span className="text-gray-900 font-medium">{categoryName}</span>
+          <span className="text-gray-900 font-medium truncate">{categoryName}</span>
         </nav>
 
-        {/* Header Section */}
-        <div className="mb-8 sm:mb-10">
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6 sm:mb-8">
+        {/* Header Section - Mobile Optimized */}
+        <div className="mb-6 sm:mb-10">
+          <div className="flex flex-col gap-4 mb-4 sm:mb-6">
             <div className="flex-1">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-3 leading-tight">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-2 leading-tight">
                 {categoryName} in {location.displayName || location.city || 'Your Area'}
               </h1>
-              <p className="text-gray-600 text-base sm:text-lg">
+              <p className="text-gray-600 text-sm sm:text-base">
                 {currentBusinesses.length > 0 
                   ? `${currentBusinesses.length} ${categoryName.toLowerCase()} found` 
                   : `Searching for ${categoryName.toLowerCase()}...`}
               </p>
             </div>
             
-            {/* Action Buttons */}
-            <div className="flex gap-3">
+            {/* Action Buttons - Mobile Optimized */}
+            <div className="flex gap-2 sm:gap-3">
               <button 
-                className="px-4 py-2.5 border border-gray-300 rounded-xl hover:border-amber-500 hover:bg-amber-50 transition-all duration-200 flex items-center gap-2 text-sm font-semibold text-gray-700"
+                className="p-2.5 sm:px-4 sm:py-2.5 border border-gray-300 rounded-full sm:rounded-xl hover:border-amber-500 hover:bg-amber-50 transition-all duration-200 flex items-center justify-center gap-2 text-sm font-semibold text-gray-700"
                 aria-label="Share"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -408,7 +410,7 @@ export default function CategoryPage({ categoryName, categorySlug }: CategoryPag
                 <span className="hidden sm:inline">Share</span>
               </button>
               <button 
-                className="px-4 py-2.5 border border-gray-300 rounded-xl hover:border-amber-500 hover:bg-amber-50 transition-all duration-200 flex items-center gap-2 text-sm font-semibold text-gray-700"
+                className="p-2.5 sm:px-4 sm:py-2.5 border border-gray-300 rounded-full sm:rounded-xl hover:border-amber-500 hover:bg-amber-50 transition-all duration-200 flex items-center justify-center gap-2 text-sm font-semibold text-gray-700"
                 aria-label="Map View"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -433,12 +435,12 @@ export default function CategoryPage({ categoryName, categorySlug }: CategoryPag
 
         {/* Hero Section Layout - Same as Homepage */}
         <section
-          className="max-w-[98%] mx-auto px-0 pt-0 pb-6 sm:pb-8"
+          className="max-w-[98%] mx-auto px-0 pt-0 pb-4 sm:pb-6 md:pb-8"
           role="region"
           aria-label={`${categoryName} listings`}
         >
-          {/* Parent Container - White Card */}
-          <div className="bg-white rounded-2xl sm:rounded-3xl shadow-lg border border-gray-100 p-4 sm:p-5 md:p-6 lg:p-8">
+          {/* Parent Container - White Card - Mobile Optimized */}
+          <div className="bg-white rounded-xl sm:rounded-2xl md:rounded-3xl shadow-lg border border-gray-100 p-3 sm:p-4 md:p-5 lg:p-8">
             {/* Desktop: 3-Column Grid Layout */}
             <div className="hidden lg:grid lg:grid-cols-[20%_60%_20%] gap-6 lg:gap-8 mb-8">
               {/* LEFT COLUMN (20%) */}
@@ -491,34 +493,89 @@ export default function CategoryPage({ categoryName, categorySlug }: CategoryPag
               />
             </div>
 
-            {/* Mobile: 3-Column Grid Layout */}
-            <div className="md:hidden grid grid-cols-[22%_56%_22%] gap-3 sm:gap-4 mb-6">
-              {/* LEFT COLUMN */}
-              <CategoryLeftRail 
-                banners={left} 
-                onBannerClick={handleBannerClick} 
-                height="h-[200px] sm:h-[240px]"
-                userLat={location.latitude}
-                userLng={location.longitude}
-              />
+            {/* Mobile: Optimized Layout with Featured Card */}
+            <div className="md:hidden space-y-4">
+              {/* Featured Card (Center) */}
+              {hero && (
+                <div className="mb-4">
+                  <MobileBusinessCard
+                    business={{
+                      id: hero.bannerId,
+                      name: hero.title || hero.advertiser || 'Business',
+                      imageUrl: hero.imageUrl,
+                      rating: hero.rating || 4.5,
+                      reviews: hero.reviews || 100,
+                      distance: hero.distance,
+                      isFeatured: true,
+                      link: hero.link,
+                    }}
+                    isLarge={true}
+                  />
+                </div>
+              )}
 
-              {/* CENTER COLUMN - Hero */}
-              <div className="flex items-center justify-center">
-                <CategoryHeroBanner hero={hero} onBannerClick={handleBannerClick} height="h-[200px] sm:h-[240px]" />
+              {/* Small Cards Grid (Left/Right) */}
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                {/* Left Column Cards */}
+                <div className="space-y-3">
+                  {left.slice(0, 2).map((banner, index) => (
+                    <MobileBusinessCard
+                      key={banner.bannerId}
+                      business={{
+                        id: banner.bannerId,
+                        name: banner.advertiser || 'Business',
+                        imageUrl: banner.imageUrl,
+                        rating: banner.rating || 4.0,
+                        reviews: banner.reviews || 50,
+                        distance: banner.distance,
+                        link: banner.link,
+                      }}
+                    />
+                  ))}
+                </div>
+
+                {/* Right Column Cards */}
+                <div className="space-y-3">
+                  {right.slice(0, 2).map((banner, index) => (
+                    <MobileBusinessCard
+                      key={banner.bannerId}
+                      business={{
+                        id: banner.bannerId,
+                        name: banner.advertiser || 'Business',
+                        imageUrl: banner.imageUrl,
+                        rating: banner.rating || 4.0,
+                        reviews: banner.reviews || 50,
+                        distance: banner.distance,
+                        link: banner.link,
+                      }}
+                    />
+                  ))}
+                </div>
               </div>
 
-              {/* RIGHT COLUMN */}
-              <CategoryRightRail 
-                banners={right} 
-                onBannerClick={handleBannerClick} 
-                height="h-[200px] sm:h-[240px]"
-                userLat={location.latitude}
-                userLng={location.longitude}
-              />
+              {/* Horizontal Scrollable Business List */}
+              {bottom.length > 0 && (
+                <div className="mt-6">
+                  <h3 className="text-lg font-bold text-gray-900 mb-4 px-2">More {categoryName}</h3>
+                  <MobileBusinessList
+                    businesses={bottom.map(banner => ({
+                      id: banner.bannerId,
+                      name: banner.advertiser || 'Business',
+                      imageUrl: banner.imageUrl,
+                      rating: banner.rating || 4.0,
+                      reviews: banner.reviews || 50,
+                      distance: banner.distance,
+                      link: banner.link,
+                    }))}
+                  />
+                </div>
+              )}
             </div>
 
-            {/* BOTTOM STRIP - Full Width */}
-            <CategoryBottomStrip banners={bottom} onBannerClick={handleBannerClick} />
+            {/* BOTTOM STRIP - Full Width (Desktop/Tablet only) */}
+            <div className="hidden md:block">
+              <CategoryBottomStrip banners={bottom} onBannerClick={handleBannerClick} />
+            </div>
           </div>
         </section>
       </main>

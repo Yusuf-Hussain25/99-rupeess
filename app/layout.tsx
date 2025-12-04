@@ -18,6 +18,12 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "KVL Business - Find Local Businesses",
   description: "Discover and connect with local businesses, shops, and services in your area",
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 5,
+    userScalable: true,
+  },
 };
 
 export default function RootLayout({

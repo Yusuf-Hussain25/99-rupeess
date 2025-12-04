@@ -215,27 +215,27 @@ export default function HeroSection({ category }: HeroSectionProps) {
           />
         </div>
 
-        {/* Mobile: 3-Column Grid Layout (Same as desktop but smaller) */}
-        <div className="md:hidden grid grid-cols-[22%_56%_22%] gap-1.5 sm:gap-2 mb-4">
-          {/* LEFT COLUMN */}
+        {/* Mobile: 3-Column Grid Layout - Optimized for mobile phones */}
+        <div className="md:hidden grid grid-cols-[24%_52%_24%] gap-1 sm:gap-1.5 mb-3">
+          {/* LEFT COLUMN - Service Cards */}
           <LeftRail 
             banners={data.left} 
             onBannerClick={handleBannerClick} 
-            height="h-[200px] sm:h-[240px]"
+            height="h-[280px] sm:h-[320px]"
             userLat={location.latitude}
             userLng={location.longitude}
           />
 
-          {/* CENTER COLUMN - Hero */}
+          {/* CENTER COLUMN - Hero Banner */}
           <div className="flex items-center justify-center">
-            <HeroBanner hero={data.hero} onBannerClick={handleBannerClick} height="h-[200px] sm:h-[240px]" />
+            <HeroBanner hero={data.hero} onBannerClick={handleBannerClick} height="h-[280px] sm:h-[320px]" />
           </div>
 
-          {/* RIGHT COLUMN */}
+          {/* RIGHT COLUMN - Service Cards */}
           <RightRail 
             banners={data.right} 
             onBannerClick={handleBannerClick} 
-            height="h-[200px] sm:h-[240px]"
+            height="h-[280px] sm:h-[320px]"
             userLat={location.latitude}
             userLng={location.longitude}
           />

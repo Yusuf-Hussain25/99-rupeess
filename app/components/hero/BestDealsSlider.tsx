@@ -65,8 +65,8 @@ export default function BestDealsSlider({ category }: BestDealsSliderProps) {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Slider Container */}
-      <div className="relative w-full h-24 sm:h-32 md:h-36">
+      {/* Slider Container - Mobile optimized */}
+      <div className="relative w-full h-32 sm:h-40 md:h-44 lg:h-48">
         {/* Slider Images */}
         {sliderImages.map((image, index) => (
           <div

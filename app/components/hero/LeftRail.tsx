@@ -150,7 +150,7 @@ export default function LeftRail({ banners, onBannerClick, height = 'h-[480px]',
             >
               <button
                 onClick={() => onBannerClick(banner.bannerId, 'left', index, banner.link)}
-                className="relative w-full flex-1 min-h-[45px] sm:min-h-[100px] rounded-lg bg-white shadow-sm overflow-hidden hover:scale-[1.02] hover:shadow-md transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className="relative w-full flex-1 min-h-[60px] sm:min-h-[70px] rounded-lg bg-white border border-gray-200 shadow-sm overflow-hidden hover:scale-[1.02] hover:shadow-md transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
                 aria-label={`Banner: ${banner.advertiser || 'Advertisement'} - Left slot ${index + 1}`}
                 data-banner-id={banner.bannerId}
                 data-section="left"
@@ -172,16 +172,16 @@ export default function LeftRail({ banners, onBannerClick, height = 'h-[480px]',
               {/* Distance and Call Button Overlay */}
               {(distance !== null || banner.isBusiness) && (
                 <>
-                  {/* Mobile: Always visible distance and time badge */}
+                  {/* Mobile: Always visible distance and time badge - Optimized */}
                   {(distance !== null || banner.distance) && (
-                    <div className="absolute top-1 right-1 sm:hidden z-10">
-                      <div className="bg-blue-600 text-white px-1.5 py-0.5 rounded-md shadow-lg flex flex-col items-center gap-0.5">
-                        <div className="flex items-center gap-1">
+                    <div className="absolute top-0.5 right-0.5 sm:hidden z-10">
+                      <div className="bg-blue-600 text-white px-1 py-0.5 rounded text-[9px] font-bold shadow-md flex flex-col items-center gap-0 leading-tight">
+                        <div className="flex items-center gap-0.5">
                           <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                           </svg>
-                          <span className="text-[8px] font-bold leading-tight">
+                          <span className="text-[9px] font-bold">
                             {((distance ?? banner.distance) || 0).toFixed(1)}km
                           </span>
                         </div>
@@ -189,7 +189,7 @@ export default function LeftRail({ banners, onBannerClick, height = 'h-[480px]',
                           <svg className="w-2 h-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
-                          <span className="text-[7px] font-semibold leading-tight">
+                          <span className="text-[8px] font-semibold">
                             {Math.round(((distance ?? banner.distance) || 0) * 1.5)}min
                           </span>
                         </div>
