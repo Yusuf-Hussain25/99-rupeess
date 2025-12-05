@@ -48,9 +48,10 @@ export function LocationProvider({ children }: { children: ReactNode }) {
           return;
         }
       }
+      const locationForLog = newLocation as PatnaLocation;
       console.log('📍 Location Selected:', {
         displayName: newLocation.displayName,
-        area: newLocation.area,
+        area: locationForLog.area,
         pincode: newLocation.pincode,
         latitude: newLocation.latitude,
         longitude: newLocation.longitude,
@@ -59,9 +60,10 @@ export function LocationProvider({ children }: { children: ReactNode }) {
       setLocation(newLocation);
     } catch (error) {
       console.warn('Geocoding failed, using location without coordinates:', error);
+      const locationForLog = newLocation as PatnaLocation;
       console.log('📍 Location Selected (without coordinates):', {
         displayName: newLocation.displayName,
-        area: newLocation.area,
+        area: locationForLog.area,
         pincode: newLocation.pincode,
         latitude: newLocation.latitude,
         longitude: newLocation.longitude,
@@ -104,10 +106,11 @@ export function LocationProvider({ children }: { children: ReactNode }) {
   // Log location changes with coordinates
   useEffect(() => {
     if (location.id) {
+      const locationForLog = location as PatnaLocation;
       console.log('📍 Current Location Updated:', {
         id: location.id,
         displayName: location.displayName,
-        area: location.area,
+        area: locationForLog.area,
         pincode: location.pincode,
         latitude: location.latitude,
         longitude: location.longitude,
