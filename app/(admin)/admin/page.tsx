@@ -147,7 +147,7 @@ export default function AdminDashboard() {
         >
           <div className="flex items-center justify-between">
             <div className="flex-1">
-              <p className="text-sm font-medium text-gray-500 uppercase tracking-wide">Banners</p>
+              <p className="text-sm font-medium text-gray-500 uppercase tracking-wide">Shop Images</p>
               <p className="text-3xl font-bold text-gray-900 mt-2">{stats?.totalBanners || 0}</p>
               <p className="text-xs text-gray-500 mt-1">{stats?.activeBanners || 0} active</p>
             </div>

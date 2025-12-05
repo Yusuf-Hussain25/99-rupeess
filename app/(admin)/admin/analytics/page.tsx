@@ -126,10 +126,10 @@ export default function AnalyticsPage() {
 
   const statCards = [
     {
-      title: 'Banners',
+      title: 'Shop Images',
       items: [
-        { label: 'Total Banners', value: stats.totalBanners, color: 'blue' },
-        { label: 'Active Banners', value: stats.activeBanners, color: 'green' },
+        { label: 'Total Shop Images', value: stats.totalBanners, color: 'blue' },
+        { label: 'Active Shop Images', value: stats.activeBanners, color: 'green' },
       ],
     },
     {

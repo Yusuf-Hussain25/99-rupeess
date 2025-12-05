@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
+import { useLocation } from '@/app/contexts/LocationContext';
 
 interface BestDealsSliderProps {
   category?: string;
@@ -9,19 +10,62 @@ interface BestDealsSliderProps {
 
 const AUTO_SLIDE_INTERVAL = 5000; // 5 seconds
 
-const sliderImages = [
+// Fallback images if no location-specific images are found
+const fallbackSliderImages = [
   { src: '/Assets/5092428.jpg', alt: 'Shopping Sale' },
   { src: '/Assets/6874380.jpg', alt: 'Shopping Center Big Sale' },
 ];
 
 export default function BestDealsSlider({ category }: BestDealsSliderProps) {
+  const { location } = useLocation();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
+  const [sliderImages, setSliderImages] = useState<Array<{ src: string; alt: string }>>(fallbackSliderImages);
+  const [loading, setLoading] = useState(true);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Fetch slider images based on location
+  useEffect(() => {
+    const fetchSliderImages = async () => {
+      // Wait for location to be available
+      if (!location?.id) {
+        setLoading(true);
+        // Don't set fallback immediately - wait a bit for location to load
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/banners?section=slider&loc=${location.id}&limit=10`);
+        const data = await res.json();
+        
+        if (data.banners && data.banners.length > 0) {
+          const images = data.banners.map((banner: any) => ({
+            src: banner.imageUrl,
+            alt: banner.alt || banner.title || 'Best Deal',
+          }));
+          setSliderImages(images);
+        } else {
+          // Only use fallback if location is set but no banners found
+          setSliderImages(fallbackSliderImages);
+        }
+      } catch (error) {
+        console.error('Error fetching slider images:', error);
+        // Only use fallback on error if we have a location
+        if (location?.id) {
+          setSliderImages(fallbackSliderImages);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSliderImages();
+  }, [location?.id]);
 
   // Auto-slide functionality
   useEffect(() => {
-    if (sliderImages.length <= 1 || isHovered) return;
+    if (sliderImages.length <= 1 || isHovered || loading) return;
 
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
@@ -36,7 +80,7 @@ export default function BestDealsSlider({ category }: BestDealsSliderProps) {
         clearInterval(intervalRef.current);
       }
     };
-  }, [isHovered]);
+  }, [isHovered, sliderImages.length, loading]);
 
   const goToSlide = (index: number) => {
     setCurrentIndex(index);
@@ -58,6 +102,20 @@ export default function BestDealsSlider({ category }: BestDealsSliderProps) {
       clearInterval(intervalRef.current);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="relative w-full bg-white rounded-xl overflow-hidden shadow-lg border border-gray-200">
+        <div className="relative w-full h-32 sm:h-40 md:h-44 lg:h-48 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (sliderImages.length === 0) {
+    return null;
+  }
 
   return (
     <div

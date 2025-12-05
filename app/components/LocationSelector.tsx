@@ -4,9 +4,7 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import type { Location } from '../types';
 import {
   detectBrowserLocation,
-  findLocationByPincode,
   getPatnaLocations,
-  searchLocations,
   type PatnaLocation,
 } from '../utils/locationUtils';
 
@@ -28,36 +26,59 @@ export default function LocationSelector({ currentLocation, onLocationChange, fo
     }
   }, [forceOpen]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [pincodeQuery, setPincodeQuery] = useState('');
-  const [pincodeMatch, setPincodeMatch] = useState<PatnaLocation | undefined>();
   const [isDetecting, setIsDetecting] = useState(false);
   const [detectError, setDetectError] = useState<string | null>(null);
   const [showPermissionModal, setShowPermissionModal] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const locations = useMemo(() => getPatnaLocations(), []);
+  const [locations, setLocations] = useState<PatnaLocation[]>([]);
+  const [visibleLocations, setVisibleLocations] = useState<PatnaLocation[]>([]);
 
-  const visibleLocations = useMemo(() => {
-    if (!searchQuery.trim()) {
-      return locations.slice(0, MAX_VISIBLE_RESULTS);
-    }
-    return searchLocations(searchQuery, locations.length).slice(0, MAX_VISIBLE_RESULTS);
-  }, [locations, searchQuery]);
-
+  // Fetch locations from database
   useEffect(() => {
-    if (pincodeQuery.length === 6) {
-      setPincodeMatch(findLocationByPincode(pincodeQuery) ?? undefined);
+    getPatnaLocations()
+      .then(setLocations)
+      .catch(() => setLocations([]));
+  }, []);
+
+  // Update visible locations based on search query (handles both area names and pincodes)
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setVisibleLocations(locations.slice(0, MAX_VISIBLE_RESULTS));
     } else {
-      setPincodeMatch(undefined);
+      const query = searchQuery.trim();
+      // Check if query is a 6-digit pincode
+      const isPincode = /^\d{6}$/.test(query);
+      
+      if (isPincode) {
+        // Search for all locations with exact pincode match (multiple areas can share same pincode)
+        const filtered = locations
+          .filter((loc) => loc.pincode?.toString() === query)
+          .slice(0, MAX_VISIBLE_RESULTS);
+        setVisibleLocations(filtered);
+      } else {
+        // Search by area name, locality, city, district, or partial pincode
+        const q = query.toLowerCase();
+        const filtered = locations
+          .filter(
+            (loc) =>
+              loc.city?.toLowerCase().includes(q) ||
+              loc.district?.toLowerCase().includes(q) ||
+              loc.displayName?.toLowerCase().includes(q) ||
+              loc.area?.toLowerCase().includes(q) ||
+              loc.pincode?.toString().includes(query)
+          )
+          .slice(0, MAX_VISIBLE_RESULTS);
+        setVisibleLocations(filtered);
+      }
     }
-  }, [pincodeQuery]);
+  }, [locations, searchQuery]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
         setSearchQuery('');
-        setPincodeQuery('');
         setDetectError(null);
       }
     };
@@ -70,7 +91,6 @@ export default function LocationSelector({ currentLocation, onLocationChange, fo
     onLocationChange({ ...location, source });
     setIsOpen(false);
     setSearchQuery('');
-    setPincodeQuery('');
     setDetectError(null);
   };
 
@@ -187,9 +207,9 @@ export default function LocationSelector({ currentLocation, onLocationChange, fo
     setShowPermissionModal(false);
   };
 
-  const handlePincodeChange = (value: string) => {
-    const sanitized = value.replace(/\D+/g, '').slice(0, 6);
-    setPincodeQuery(sanitized);
+  const handleSearchChange = (value: string) => {
+    // Allow both text and numbers
+    setSearchQuery(value);
   };
 
   return (
@@ -208,11 +228,11 @@ export default function LocationSelector({ currentLocation, onLocationChange, fo
         </svg>
         <div className="flex flex-col text-left min-w-0 flex-1">
           <span className="truncate font-semibold text-xs sm:text-sm">
-            {currentLocation.source === 'browser' ? 'Current Location' : (currentLocation.city || currentLocation.displayName)}
+            {currentLocation.source === 'browser' ? 'Current Location' : (currentLocation.displayName || currentLocation.city || 'Select Location')}
           </span>
           {currentLocation.source !== 'browser' && currentLocation.pincode && (
             <span className="text-[9px] sm:text-[10px] text-gray-500 truncate">
-              PIN {currentLocation.pincode} · {currentLocation.district}
+              PIN {currentLocation.pincode} · {currentLocation.district || currentLocation.city}
             </span>
           )}
         </div>
@@ -224,81 +244,35 @@ export default function LocationSelector({ currentLocation, onLocationChange, fo
 
       {isOpen && (
         <div className={`${hideButton ? 'static' : 'absolute left-0 mt-2 sm:mt-3'} ${hideButton ? 'w-full' : 'w-[calc(100vw-1rem)]'} sm:w-[26rem] ${hideButton ? 'max-w-full' : 'max-w-[calc(100vw-1rem)]'} sm:max-w-[26rem] bg-white border-2 border-gray-100 rounded-xl sm:rounded-2xl ${hideButton ? '' : 'shadow-2xl'} z-50 ${hideButton ? 'max-h-[24rem] sm:max-h-[28rem]' : 'max-h-[calc(100vh-8rem)] sm:max-h-[32rem]'} overflow-hidden flex flex-col backdrop-blur-sm`}>
-          {/* Search Box */}
+          {/* Unified Search Box */}
           <div className="p-3 sm:p-4 border-b-2 border-gray-100 bg-gradient-to-r from-blue-50/50 to-orange-50/50">
             <div className="relative">
               <input
                 type="text"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search city or locality..."
+                onChange={(e) => handleSearchChange(e.target.value)}
+                placeholder="Search area name or enter pincode..."
                 className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900 border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 sm:focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 bg-white shadow-sm transition-all"
                 autoFocus
               />
               <svg className="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2.5 sm:right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  aria-label="Clear search"
+                >
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
             </div>
             <p className="mt-1.5 sm:mt-2 text-[10px] sm:text-xs text-gray-500">
-              Choose from {locations.length} Patna localities in our dataset.
+              Choose from {locations.length} Patna localities in our dataset. Type area name or 6-digit pincode.
             </p>
-          </div>
-
-          {/* Pincode Search */}
-          <div className="px-3 sm:px-5 py-2.5 sm:py-3 border-b-2 border-gray-100 bg-white">
-            <div className="flex items-start gap-2 sm:gap-3">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-amber-100 to-amber-200 flex items-center justify-center shrink-0">
-                <svg className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c1.657 0 3-1.343 3-3S13.657 5 12 5 9 6.343 9 8s1.343 3 3 3zM5.4 20a6.6 6.6 0 0113.2 0" />
-                </svg>
-              </div>
-              <div className="flex-1 min-w-0">
-                <label className="text-[10px] sm:text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Find by Pincode
-                </label>
-                <div className="mt-1.5 sm:mt-2 relative">
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={6}
-                    value={pincodeQuery}
-                    onChange={(e) => handlePincodeChange(e.target.value)}
-                    placeholder="Enter 6-digit PIN"
-                    className="w-full pl-2.5 sm:pl-3 pr-2.5 sm:pr-3 py-1.5 sm:py-2 text-xs sm:text-sm text-gray-900 border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 sm:focus:ring-4 focus:ring-amber-500/20 focus:border-amber-500 transition-all"
-                  />
-                  {pincodeQuery && (
-                    <button
-                      onClick={() => setPincodeQuery('')}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                      aria-label="Clear pincode"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  )}
-                </div>
-                {pincodeQuery.length === 6 && (
-                  <div className="mt-3">
-                    {pincodeMatch ? (
-                      <button
-                        onClick={() => handleLocationSelect(pincodeMatch, 'pincode')}
-                        className="w-full px-3 py-2 text-left text-sm rounded-xl bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition-all"
-                      >
-                        <p className="font-semibold">{pincodeMatch.city}</p>
-                        <p className="text-xs text-green-600">
-                          PIN {pincodeMatch.pincode} · {pincodeMatch.district}
-                        </p>
-                      </button>
-                    ) : (
-                      <p className="text-xs text-red-500 font-medium">
-                        No locality matches this pincode in our records.
-                      </p>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
           </div>
 
           {/* Use Current Location */}
@@ -428,9 +402,9 @@ export default function LocationSelector({ currentLocation, onLocationChange, fo
                       </svg>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold truncate text-xs sm:text-sm">{location.city}</p>
+                      <p className="font-semibold truncate text-xs sm:text-sm">{location.displayName || location.city}</p>
                       <p className="text-[10px] sm:text-xs text-gray-500 truncate">
-                        PIN {location.pincode} · {location.district}
+                        {location.pincode ? `PIN ${location.pincode}` : ''} {location.pincode && location.district ? '·' : ''} {location.district || location.area || ''}
                       </p>
                     </div>
                     {location.id === currentLocation.id && (

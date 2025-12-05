@@ -89,12 +89,12 @@ export default function LocationsPage() {
         toast.error(data.error || 'Operation failed');
       }
     } catch (error) {
-      toast.error('Failed to save location');
+        toast.error('Failed to save pincode');
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this location?')) return;
+    if (!confirm('Are you sure you want to delete this pincode?')) return;
 
     try {
       const res = await fetch(`/api/admin/locations/${id}`, {
@@ -106,13 +106,13 @@ export default function LocationsPage() {
 
       const data = await res.json();
       if (data.success) {
-        toast.success('Location deleted');
+        toast.success('Pincode deleted');
         fetchLocations();
       } else {
         toast.error(data.error || 'Delete failed');
       }
     } catch (error) {
-      toast.error('Failed to delete location');
+      toast.error('Failed to delete pincode');
     }
   };
 
@@ -162,8 +162,8 @@ export default function LocationsPage() {
     <div>
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Location Management</h1>
-          <p className="text-gray-600 mt-1">Manage areas, pincodes, and location data</p>
+          <h1 className="text-3xl font-bold text-gray-900">Pincode Management</h1>
+          <p className="text-gray-600 mt-1">Manage pincodes, areas, and location data</p>
         </div>
         <button
           onClick={() => {
@@ -176,7 +176,7 @@ export default function LocationsPage() {
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-          Add Location
+          Add Pincode
         </button>
       </div>
 

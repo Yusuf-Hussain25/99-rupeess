@@ -81,7 +81,7 @@ export const POST = requireAdmin(async (request: NextRequest) => {
       bannerOrder = maxOrderBanner ? (maxOrderBanner.order || 0) + 1 : 0;
     }
 
-    const banner = await Banner.create({
+    const bannerData = {
       section,
       imageUrl,
       title,
@@ -99,7 +99,9 @@ export const POST = requireAdmin(async (request: NextRequest) => {
       lng: lng ? parseFloat(lng) : undefined,
       isActive: isActive !== undefined ? isActive : true,
       order: bannerOrder,
-    });
+    };
+
+    const banner = await Banner.create(bannerData);
 
     return NextResponse.json(
       { success: true, banner },
@@ -107,8 +109,33 @@ export const POST = requireAdmin(async (request: NextRequest) => {
     );
   } catch (error: any) {
     console.error('Error creating banner:', error);
+    console.error('Error name:', error.name);
+    console.error('Error code:', error.code);
+    console.error('Error message:', error.message);
+    
+    // Return more detailed error information
+    let errorMessage = 'Failed to create banner';
+    let errorDetails = error.message;
+    
+    // Check for validation errors
+    if (error.name === 'ValidationError') {
+      errorMessage = 'Validation error';
+      errorDetails = Object.values(error.errors || {})
+        .map((err: any) => `${err.path}: ${err.message}`)
+        .join(', ');
+      console.error('Validation errors:', error.errors);
+    } else if (error.code === 11000) {
+      errorMessage = 'Duplicate entry';
+      errorDetails = 'A banner with these details already exists';
+    }
+    
     return NextResponse.json(
-      { error: 'Failed to create banner', details: error.message },
+      { 
+        success: false,
+        error: errorMessage, 
+        details: errorDetails,
+        fullError: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      },
       { status: 500 }
     );
   }

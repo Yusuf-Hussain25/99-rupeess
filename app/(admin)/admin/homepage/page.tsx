@@ -262,17 +262,17 @@ export default function HomepagePage() {
 
       const data = await res.json();
       if (data.success) {
-        toast.success(editingBanner ? 'Banner updated successfully' : 'Banner added successfully');
+        toast.success(editingBanner ? 'Shop image updated successfully' : 'Shop image added successfully');
         setShowBannerForm(false);
         setEditingBanner(null);
         resetBannerForm();
         fetchBannersForVariant();
       } else {
-        toast.error(data.error || 'Failed to save banner');
+        toast.error(data.error || 'Failed to save shop image');
       }
     } catch (error) {
-      console.error('Error saving banner:', error);
-      toast.error('Failed to save banner');
+      console.error('Error saving shop image:', error);
+      toast.error('Failed to save shop image');
     }
   };
 
@@ -295,7 +295,7 @@ export default function HomepagePage() {
   };
 
   const handleDeleteBanner = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this banner?')) return;
+    if (!confirm('Are you sure you want to delete this shop image?')) return;
 
     try {
       const res = await fetch(`/api/admin/banners/${id}`, {
@@ -305,14 +305,14 @@ export default function HomepagePage() {
 
       const data = await res.json();
       if (data.success) {
-        toast.success('Banner deleted successfully');
+        toast.success('Shop image deleted successfully');
         fetchBannersForVariant();
       } else {
-        toast.error(data.error || 'Failed to delete banner');
+        toast.error(data.error || 'Failed to delete shop image');
       }
     } catch (error) {
-      console.error('Error deleting banner:', error);
-      toast.error('Failed to delete banner');
+      console.error('Error deleting shop image:', error);
+      toast.error('Failed to delete shop image');
     }
   };
 
@@ -354,7 +354,7 @@ export default function HomepagePage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Homepage Management</h1>
-          <p className="text-gray-600 mt-1">Manage homepage sections, banners, and create variations</p>
+          <p className="text-gray-600 mt-1">Manage homepage sections, shop images, and create variations</p>
         </div>
         <div className="flex gap-3">
           <button
@@ -433,7 +433,7 @@ export default function HomepagePage() {
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-bold text-gray-900">
-                    {sections.find(s => s.key === activeSection)?.name} Banners
+                    {sections.find(s => s.key === activeSection)?.name} Shop Images
                   </h2>
                   <button
                     onClick={() => {
@@ -442,14 +442,14 @@ export default function HomepagePage() {
                     }}
                     className="px-4 py-2 bg-custom-gradient text-white font-semibold rounded-lg hover:opacity-90 transition-opacity"
                   >
-                    + Add Banner
+                    + Add Shop Image
                   </button>
                 </div>
 
                 <div className="space-y-4">
                   {banners[activeSection]?.length === 0 ? (
                     <div className="text-center py-12 text-gray-500">
-                      No banners in this section. Add your first banner!
+                      No shop images in this section. Add your first shop image!
                     </div>
                   ) : (
                     banners[activeSection]?.map((banner) => (
@@ -462,7 +462,7 @@ export default function HomepagePage() {
                             {banner.imageUrl ? (
                               <Image
                                 src={banner.imageUrl}
-                                alt={banner.alt || banner.title || 'Banner'}
+                                alt={banner.alt || banner.title || 'Shop Image'}
                                 fill
                                 className="object-cover"
                               />
@@ -474,7 +474,7 @@ export default function HomepagePage() {
                           </div>
                           <div className="flex-1 min-w-0">
                             <h3 className="font-semibold text-gray-900 truncate">
-                              {banner.title || 'Untitled Banner'}
+                              {banner.title || 'Untitled Shop Image'}
                             </h3>
                             <p className="text-sm text-gray-600 truncate">{banner.linkUrl}</p>
                             {banner.lat && banner.lng && (
@@ -524,22 +524,22 @@ export default function HomepagePage() {
                 <h3 className="text-lg font-bold text-gray-900 mb-4">Section Info</h3>
                 <div className="space-y-3 text-sm">
                   <div>
-                    <span className="font-medium text-gray-700">Total Banners:</span>
+                    <span className="font-medium text-gray-700">Total Shop Images:</span>
                     <span className="ml-2 text-gray-900">{banners[activeSection]?.length || 0}</span>
                   </div>
                   <div>
-                    <span className="font-medium text-gray-700">Active Banners:</span>
+                    <span className="font-medium text-gray-700">Active Shop Images:</span>
                     <span className="ml-2 text-green-600">
                       {banners[activeSection]?.filter(b => b.isActive).length || 0}
                     </span>
                   </div>
                   <div className="pt-4 border-t border-gray-200">
                     <p className="text-xs text-gray-500">
-                      {activeSection === 'hero' && 'Center hero banner - Main featured banner'}
-                      {activeSection === 'left' && 'Left column - Vertical banner strip (4 banners)'}
-                      {activeSection === 'right' && 'Right column - Vertical banner strip (4 banners)'}
-                      {activeSection === 'top' && 'Top strip - Horizontal scrolling banners'}
-                      {activeSection === 'bottom' && 'Bottom strip - Horizontal scrolling banners'}
+                      {activeSection === 'hero' && 'Center hero section - Main featured shop image'}
+                      {activeSection === 'left' && 'Left column - Vertical shop image strip (4 shop images)'}
+                      {activeSection === 'right' && 'Right column - Vertical shop image strip (4 shop images)'}
+                      {activeSection === 'top' && 'Top strip - Horizontal scrolling shop images'}
+                      {activeSection === 'bottom' && 'Bottom strip - Horizontal scrolling shop images'}
                     </p>
                   </div>
                 </div>
@@ -598,7 +598,7 @@ export default function HomepagePage() {
           <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-gray-200">
               <h2 className="text-2xl font-bold text-gray-900">
-                {editingBanner ? 'Edit Banner' : 'Add New Banner'}
+                {editingBanner ? 'Edit Shop Image' : 'Add New Shop Image'}
               </h2>
             </div>
             <form onSubmit={handleBannerSubmit} className="p-6 space-y-4">
@@ -738,7 +738,7 @@ export default function HomepagePage() {
                   type="submit"
                   className="flex-1 px-6 py-3 bg-custom-gradient text-white font-semibold rounded-lg hover:opacity-90 transition-opacity"
                 >
-                  {editingBanner ? 'Update Banner' : 'Add Banner'}
+                  {editingBanner ? 'Update Shop Image' : 'Add Shop Image'}
                 </button>
                 <button
                   type="button"

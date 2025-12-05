@@ -1,17 +1,10 @@
-import rawLocations from '../patna_full_locations.json';
 import type { Location } from '../types';
-
-export interface PatnaLocationRecord {
-  Location: string;
-  Pincode: number;
-  State: string;
-  District: string;
-}
 
 export interface PatnaLocation extends Location {
   pincode: number;
   district: string;
   state: string;
+  area?: string;
 }
 
 const slugify = (value: string) =>
@@ -22,46 +15,109 @@ const slugify = (value: string) =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
 
-const normalizeLocation = (entry: PatnaLocationRecord): PatnaLocation => {
-  const locationSlug = slugify(entry.Location);
+// Cache for locations fetched from API
+let cachedLocations: PatnaLocation[] | null = null;
+let locationsPromise: Promise<PatnaLocation[]> | null = null;
+
+/**
+ * Fetch locations from database via API
+ */
+async function fetchLocationsFromDB(): Promise<PatnaLocation[]> {
+  try {
+    const response = await fetch('/api/locations');
+    const data = await response.json();
+    
+    if (data.success && data.locations) {
+      return data.locations.map((loc: any) => ({
+        id: loc.id,
+        city: loc.city || 'Patna',
+        state: loc.state || 'Bihar',
+        country: loc.country || 'IN',
+        displayName: loc.displayName || loc.city,
+        pincode: loc.pincode,
+        district: loc.district || 'Patna',
+        area: loc.area,
+        latitude: loc.latitude,
+        longitude: loc.longitude,
+      })) as PatnaLocation[];
+    }
+    
+    // Fallback to default location if API fails
+    return [getDefaultLocationFallback()];
+  } catch (error) {
+    console.error('Error fetching locations from database:', error);
+    // Fallback to default location
+    return [getDefaultLocationFallback()];
+  }
+}
+
+/**
+ * Get locations (cached or fetch from DB)
+ */
+async function getLocations(): Promise<PatnaLocation[]> {
+  if (cachedLocations) {
+    return cachedLocations;
+  }
+  
+  if (locationsPromise) {
+    return locationsPromise;
+  }
+  
+  locationsPromise = fetchLocationsFromDB();
+  cachedLocations = await locationsPromise;
+  return cachedLocations;
+}
+
+/**
+ * Get default location fallback (used when DB is unavailable)
+ */
+function getDefaultLocationFallback(): PatnaLocation {
   return {
-    id: `${locationSlug}-${entry.Pincode}`,
-    city: entry.Location,
-    state: entry.State,
+    id: 'patna-800001',
+    city: 'Patna',
+    state: 'Bihar',
     country: 'IN',
-    displayName: `${entry.Location}, ${entry.District}`,
-    pincode: entry.Pincode,
-    district: entry.District,
+    displayName: 'Patna, Patna',
+    pincode: 800001,
+    district: 'Patna',
+    latitude: 25.5941,
+    longitude: 85.1376,
   };
+}
+
+export const getPatnaLocations = async (): Promise<PatnaLocation[]> => {
+  return getLocations();
 };
 
-const patnaLocations: PatnaLocation[] = (rawLocations as PatnaLocationRecord[]).map(normalizeLocation);
+export const getDefaultLocation = (): PatnaLocation => {
+  // Return fallback immediately for synchronous use
+  return getDefaultLocationFallback();
+};
 
-export const getPatnaLocations = () => patnaLocations;
-
-export const getDefaultLocation = (): PatnaLocation => patnaLocations[0];
-
-export const findLocationByPincode = (pincode: string | number) => {
+export const findLocationByPincode = async (pincode: string | number): Promise<PatnaLocation | undefined> => {
   const sanitized = typeof pincode === 'number' ? pincode.toString() : pincode;
   const trimmed = sanitized.replace(/\D+/g, '').slice(0, 6);
   if (!trimmed) return undefined;
-  return patnaLocations.find((loc) => loc.pincode.toString() === trimmed);
+  const locations = await getLocations();
+  return locations.find((loc) => loc.pincode.toString() === trimmed);
 };
 
-export const findLocationByName = (name: string) => {
+export const findLocationByName = async (name: string): Promise<PatnaLocation | undefined> => {
   const normalized = slugify(name);
-  return patnaLocations.find(
+  const locations = await getLocations();
+  return locations.find(
     (loc) => slugify(loc.city) === normalized || slugify(loc.displayName) === normalized
   );
 };
 
-export const searchLocations = (query: string, limit = 50) => {
+export const searchLocations = async (query: string, limit = 50): Promise<PatnaLocation[]> => {
   const q = query.trim().toLowerCase();
+  const locations = await getLocations();
   if (!q) {
-    return patnaLocations.slice(0, limit);
+    return locations.slice(0, limit);
   }
 
-  return patnaLocations
+  return locations
     .filter(
       (loc) =>
         loc.city.toLowerCase().includes(q) ||
@@ -83,12 +139,14 @@ type ReverseAddress = {
   district?: string;
 };
 
-export const matchAddressToLocation = (address?: ReverseAddress) => {
+export const matchAddressToLocation = async (address?: ReverseAddress): Promise<PatnaLocation | undefined> => {
   if (!address) return undefined;
+
+  const locations = await getLocations();
 
   // First, try to match by pincode (most reliable)
   if (address.postcode) {
-    const pincodeMatch = findLocationByPincode(address.postcode);
+    const pincodeMatch = await findLocationByPincode(address.postcode);
     if (pincodeMatch) return pincodeMatch;
   }
 
@@ -105,7 +163,7 @@ export const matchAddressToLocation = (address?: ReverseAddress) => {
   ].filter(Boolean) as string[];
 
   for (const name of candidates) {
-    const match = findLocationByName(name);
+    const match = await findLocationByName(name);
     if (match) return match;
   }
 
@@ -113,7 +171,7 @@ export const matchAddressToLocation = (address?: ReverseAddress) => {
   for (const name of candidates) {
     const normalized = slugify(name);
     // Try to find locations that contain the name or vice versa
-    const fuzzyMatch = patnaLocations.find((loc) => {
+    const fuzzyMatch = locations.find((loc) => {
       const locCity = slugify(loc.city);
       const locDistrict = slugify(loc.district);
       return (
@@ -130,6 +188,82 @@ export const matchAddressToLocation = (address?: ReverseAddress) => {
 };
 
 const NOMINATIM_ENDPOINT = 'https://nominatim.openstreetmap.org/reverse';
+const NOMINATIM_SEARCH_ENDPOINT = 'https://nominatim.openstreetmap.org/search';
+
+/**
+ * Geocode a location to get its latitude and longitude
+ * @param location - Location object with city, pincode, district, etc.
+ * @returns Location with latitude and longitude, or null if geocoding fails
+ */
+export const geocodeLocation = async (location: PatnaLocation): Promise<PatnaLocation | null> => {
+  // If location already has coordinates, return it
+  if (location.latitude && location.longitude) {
+    console.log('Location already has coordinates:', location.displayName, location.latitude, location.longitude);
+    return location;
+  }
+
+  console.log('Geocoding location:', location.displayName, location.city, location.pincode);
+
+  try {
+    // Build search query - prioritize pincode for accuracy
+    let query = '';
+    if (location.pincode) {
+      query = `${location.pincode}, Patna, Bihar, India`;
+    } else if (location.city) {
+      query = `${location.city}, Patna, Bihar, India`;
+    } else {
+      query = 'Patna, Bihar, India';
+    }
+    
+    const params = new URLSearchParams({
+      q: query,
+      format: 'json',
+      limit: '1',
+      addressdetails: '1',
+    });
+
+    console.log('Geocoding request:', `${NOMINATIM_SEARCH_ENDPOINT}?${params.toString()}`);
+
+    const response = await fetch(`${NOMINATIM_SEARCH_ENDPOINT}?${params.toString()}`, {
+      headers: {
+        'Accept-Language': 'en',
+        'User-Agent': '99-rupeess-app/1.0',
+      },
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log('Geocoding response:', data);
+      if (data && data.length > 0) {
+        const result = data[0];
+        const lat = parseFloat(result.lat);
+        const lon = parseFloat(result.lon);
+        
+        if (!isNaN(lat) && !isNaN(lon)) {
+          console.log('Geocoding successful:', location.displayName, lat, lon);
+          return {
+            ...location,
+            latitude: lat,
+            longitude: lon,
+          };
+        }
+      }
+    } else {
+      console.warn('Geocoding API error:', response.status, response.statusText);
+    }
+  } catch (error) {
+    console.warn('Geocoding failed for location:', location.displayName, error);
+  }
+
+  // Fallback: Use approximate Patna center coordinates if geocoding fails
+  // Patna center coordinates: 25.5941° N, 85.1376° E
+  console.log('Using fallback coordinates for:', location.displayName);
+  return {
+    ...location,
+    latitude: 25.5941,
+    longitude: 85.1376,
+  };
+};
 
 const getBrowserPosition = () =>
   new Promise<GeolocationPosition>((resolve, reject) => {
@@ -183,7 +317,7 @@ export const detectBrowserLocation = async (): Promise<PatnaLocation | null> => 
 
       if (response.ok) {
         const data = await response.json();
-        const matched = matchAddressToLocation(data.address);
+        const matched = await matchAddressToLocation(data.address);
         
         // If we found a match, return it
         if (matched) {

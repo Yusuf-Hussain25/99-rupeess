@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo } from 'react';
 
 interface Banner {
   bannerId: string;
@@ -81,62 +81,14 @@ const fallbackSetB: Banner[] = [
   createBanner('asset-meta-alt', 'Graphic Designer Replaces Wordmarks In 30 Famous Logos With The Fonts They Use.jpeg', 'Wordmark Logos'),
 ];
 
-const FADE_DURATION = 600;
-const ROTATION_INTERVAL = 5000;
-
 export default function BottomStrip({ banners, onBannerClick }: BottomStripProps) {
-  const chunkBanners = (source: Banner[]) => {
-    const chunks: Banner[][] = [];
-    for (let i = 0; i < source.length; i += 20) {
-      chunks.push(source.slice(i, i + 20));
+  // Show only first 20 banners, or fallback if no banners
+  const currentBanners = useMemo(() => {
+    if (banners.length === 0) {
+      return fallbackSetA;
     }
-    return chunks;
-  };
-
-  const bannerSets = useMemo(() => {
-    const dynamicSets = chunkBanners(banners);
-    if (dynamicSets.length === 0) {
-      return [fallbackSetA, fallbackSetB];
-    }
-    return [...dynamicSets, fallbackSetA, fallbackSetB];
+    return banners.slice(0, 20);
   }, [banners]);
-
-  const [activeSetIndex, setActiveSetIndex] = useState(0);
-  const [isFading, setIsFading] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    if (bannerSets.length <= 1) return;
-    
-    // Clear any existing interval
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-    }
-
-    // Don't start interval if hovered
-    if (isHovered) return;
-
-    intervalRef.current = setInterval(() => {
-      setIsFading(true);
-      setTimeout(() => {
-        setActiveSetIndex((prev) => (prev + 1) % bannerSets.length);
-        setIsFading(false);
-      }, FADE_DURATION);
-    }, ROTATION_INTERVAL);
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [bannerSets.length, isHovered]);
-
-  useEffect(() => {
-    setActiveSetIndex(0);
-  }, [bannerSets.length]);
-
-  const currentBanners = bannerSets[activeSetIndex] || [];
   const renderPlaceholder = (position: number) => (
     <div
       onClick={() => window.location.href = '/advertise'}
@@ -159,17 +111,10 @@ export default function BottomStrip({ banners, onBannerClick }: BottomStripProps
   const mobileRow4 = currentBanners.slice(15, 20);
 
   return (
-    <div 
-      className="w-full mt-6"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
+    <div className="w-full mt-6">
       {/* Desktop: 2 Rows of 10 images each */}
       <div className="hidden md:block relative" aria-live="polite">
-        <div
-          className={`transition-opacity ${isFading ? 'opacity-0' : 'opacity-100'}`}
-          style={{ transitionDuration: `${FADE_DURATION}ms` }}
-        >
+        <div>
           {/* Row 1: 10 images */}
           <div className="flex flex-wrap justify-center gap-2 mb-2">
           {[...Array(10)].map((_, index) => {
@@ -276,10 +221,7 @@ export default function BottomStrip({ banners, onBannerClick }: BottomStripProps
 
       {/* Mobile: 4 Rows of 5 images each (smaller sizes) */}
       <div className="md:hidden relative" aria-live="polite">
-        <div
-          className={`transition-opacity ${isFading ? 'opacity-0' : 'opacity-100'}`}
-          style={{ transitionDuration: `${FADE_DURATION}ms` }}
-        >
+        <div>
           {/* Row 1: 5 images */}
           <div className="flex flex-wrap justify-center gap-1 sm:gap-1.5 mb-1 sm:mb-1.5">
             {[...Array(5)].map((_, index) => {

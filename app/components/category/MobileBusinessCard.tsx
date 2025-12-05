@@ -111,3 +111,9 @@ export default function MobileBusinessCard({ business, isLarge = false }: Mobile
   );
 }
 
+
+
+
+
+
+

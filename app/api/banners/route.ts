@@ -339,14 +339,24 @@ export async function GET(request: NextRequest) {
       .limit(limit)
       .lean();
 
-    // If no banners found in DB, use mock data as fallback
-    if (dbBanners.length === 0 && !section && !loc && !area && !pincode) {
+    // If no banners found in DB for a specific location, return empty array (don't use mock data)
+    // Only use mock data if no location filter is applied
+    if (dbBanners.length === 0 && !loc && !area && !pincode) {
       let banners = mockBanners;
       if (section) {
         banners = banners.filter((b) => b.section === section);
       }
       banners = banners.slice(0, limit);
       return NextResponse.json({ banners });
+    }
+    
+    // If location-specific query returns no results, return empty array
+    if (dbBanners.length === 0 && (loc || area || pincode)) {
+      return NextResponse.json({ banners: [] }, {
+        headers: {
+          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120'
+        }
+      });
     }
 
     // Convert database banners to API format
@@ -365,6 +375,8 @@ export async function GET(request: NextRequest) {
       position: banner.position,
       lat: banner.lat,
       lng: banner.lng,
+      rating: banner.rating,
+      reviews: banner.reviews,
     }));
 
     return NextResponse.json({ banners }, {

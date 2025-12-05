@@ -1,6 +1,8 @@
 'use client';
 
 import Image from 'next/image';
+import { useState, useEffect } from 'react';
+import { getBannerDistance } from '../../utils/shopDistance';
 
 interface HeroBannerData {
   bannerId: string;
@@ -10,19 +12,20 @@ interface HeroBannerData {
   title?: string;
   ctaText?: string;
   advertiser?: string;
-  distance?: number;
+  lat?: number;
+  lng?: number;
   isBusiness?: boolean;
-  userLat?: number | null;
-  userLng?: number | null;
 }
 
 interface HeroBannerProps {
   hero?: HeroBannerData;
   onBannerClick: (bannerId: string, section: 'hero', position: number, link: string) => void;
   height?: string;
+  userLat?: number | null;
+  userLng?: number | null;
 }
 
-export default function HeroBanner({ hero, onBannerClick, height = 'h-[480px]' }: HeroBannerProps) {
+export default function HeroBanner({ hero, onBannerClick, height = 'h-[480px]', userLat, userLng }: HeroBannerProps) {
   if (!hero) {
     return (
       <div className={`w-full ${height} bg-linear-to-br from-gray-100 to-gray-200 rounded-xl flex flex-col items-center justify-center border-2 border-dashed border-gray-300`}>
@@ -41,6 +44,19 @@ export default function HeroBanner({ hero, onBannerClick, height = 'h-[480px]' }
   }
 
   const ctaLabel = hero.title || hero.advertiser || 'View offer';
+  const [distance, setDistance] = useState<number | null>(null);
+
+  // Calculate distance
+  useEffect(() => {
+    if (!hero) {
+      setDistance(null);
+      return;
+    }
+    
+    getBannerDistance(hero, userLat ?? null, userLng ?? null)
+      .then(setDistance)
+      .catch(() => setDistance(null));
+  }, [hero, userLat, userLng]);
 
   return (
     <div className={`relative w-full ${height} rounded-xl overflow-hidden shadow-lg border border-gray-200 group`}>
@@ -62,7 +78,7 @@ export default function HeroBanner({ hero, onBannerClick, height = 'h-[480px]' }
       <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/20 to-transparent" />
       
       {/* Distance and Time Badge */}
-      {(hero.distance !== undefined || hero.isBusiness) && (
+      {(distance !== null && distance !== undefined) && (
         <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20">
           <div className="bg-white/95 backdrop-blur-md px-3 py-2 rounded-lg shadow-lg border border-white/50 flex flex-col gap-1.5">
             <div className="flex items-center gap-2">
@@ -71,19 +87,17 @@ export default function HeroBanner({ hero, onBannerClick, height = 'h-[480px]' }
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
               <span className="text-sm font-bold text-gray-900">
-                {hero.distance ? `${hero.distance.toFixed(1)} km` : 'Nearby'}
+                {distance.toFixed(1)} km
               </span>
             </div>
-            {hero.distance && (
-              <div className="flex items-center gap-2">
-                <svg className="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span className="text-sm font-bold text-gray-900">
-                  {Math.round(hero.distance * 1.5)} min
-                </span>
-              </div>
-            )}
+            <div className="flex items-center gap-2">
+              <svg className="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span className="text-sm font-bold text-gray-900">
+                {Math.round(distance * 1.5)} min
+              </span>
+            </div>
           </div>
         </div>
       )}

@@ -1,10 +1,49 @@
-import shopData from '../shop.json';
 import { calculateDistance } from './distance';
 
 export interface Shop {
   name: string;
   lat: number;
   lng: number;
+}
+
+// Cache for shops fetched from API
+let cachedShops: Shop[] | null = null;
+let shopsPromise: Promise<Shop[]> | null = null;
+
+/**
+ * Fetch shops from database via API
+ */
+async function fetchShopsFromDB(): Promise<Shop[]> {
+  try {
+    const response = await fetch('/api/shops');
+    const data = await response.json();
+    
+    if (data.success && data.shops) {
+      return data.shops as Shop[];
+    }
+    
+    return [];
+  } catch (error) {
+    console.error('Error fetching shops from database:', error);
+    return [];
+  }
+}
+
+/**
+ * Get shops (cached or fetch from DB)
+ */
+async function getShops(): Promise<Shop[]> {
+  if (cachedShops) {
+    return cachedShops;
+  }
+  
+  if (shopsPromise) {
+    return shopsPromise;
+  }
+  
+  shopsPromise = fetchShopsFromDB();
+  cachedShops = await shopsPromise;
+  return cachedShops;
 }
 
 export interface BannerWithDistance {
@@ -21,7 +60,7 @@ export interface BannerWithDistance {
  * - "Reliance-Industries-Limited-Logo.png" -> "Reliance"
  * - "ASIANPAINT.NS-6124f67e.png" -> "Asian"
  */
-function extractShopNameFromImage(imageUrl: string): string | null {
+async function extractShopNameFromImage(imageUrl: string): Promise<string | null> {
   try {
     // Extract filename from path
     const filename = imageUrl.split('/').pop() || '';
@@ -45,8 +84,9 @@ function extractShopNameFromImage(imageUrl: string): string | null {
       .replace(/^[\w]+-/, '') // Remove prefixes before first dash
       .trim();
     
-    // Try to match with shop names from shop.json
-    const shops = shopData as Shop[];
+    // Try to match with shop names from database
+    const shops = await getShops();
+    if (shops.length === 0) return null;
     
     // First, try exact match (case-insensitive)
     const exactMatch = shops.find(shop => 
@@ -96,8 +136,9 @@ function extractShopNameFromImage(imageUrl: string): string | null {
 /**
  * Get shop coordinates by name
  */
-function getShopCoordinates(shopName: string): { lat: number; lng: number } | null {
-  const shop = (shopData as Shop[]).find(
+async function getShopCoordinates(shopName: string): Promise<{ lat: number; lng: number } | null> {
+  const shops = await getShops();
+  const shop = shops.find(
     s => s.name.toLowerCase() === shopName.toLowerCase()
   );
   return shop ? { lat: shop.lat, lng: shop.lng } : null;
@@ -110,11 +151,11 @@ function getShopCoordinates(shopName: string): { lat: number; lng: number } | nu
  * @param userLng - User's longitude
  * @returns Distance in kilometers or null if not found
  */
-export function getBannerDistance(
+export async function getBannerDistance(
   banner: any,
   userLat: number | null,
   userLng: number | null
-): number | null {
+): Promise<number | null> {
   if (userLat === null || userLng === null) return null;
   
   // First, try to use lat/lng directly from banner (preferred)
@@ -128,11 +169,11 @@ export function getBannerDistance(
     );
   }
   
-  // Fallback to shop.json lookup
-  const shopName = extractShopNameFromImage(banner.imageUrl);
+  // Fallback to shop database lookup
+  const shopName = await extractShopNameFromImage(banner.imageUrl);
   if (!shopName) return null;
   
-  const shopCoords = getShopCoordinates(shopName);
+  const shopCoords = await getShopCoordinates(shopName);
   if (!shopCoords) return null;
   
   return calculateDistance(
@@ -150,18 +191,18 @@ export function getBannerDistance(
  * @param userLng - User's longitude
  * @returns Sorted banners with distance information
  */
-export function sortBannersByDistance(
+export async function sortBannersByDistance(
   banners: any[],
   userLat: number | null,
   userLng: number | null
-): BannerWithDistance[] {
+): Promise<BannerWithDistance[]> {
   // If no user location, return banners as-is
   if (userLat === null || userLng === null) {
     return banners.map(banner => ({ banner }));
   }
 
-  // Map banners with distances
-  const bannersWithDistance: BannerWithDistance[] = banners.map(banner => {
+  // Map banners with distances (async)
+  const bannersWithDistancePromises = banners.map(async (banner) => {
     // First, try to use lat/lng directly from banner (preferred)
     if (banner.lat !== undefined && banner.lng !== undefined && 
         banner.lat !== null && banner.lng !== null) {
@@ -174,10 +215,10 @@ export function sortBannersByDistance(
       return { banner, distance };
     }
     
-    // Fallback to shop.json lookup
-    const shopName = extractShopNameFromImage(banner.imageUrl);
+    // Fallback to shop database lookup
+    const shopName = await extractShopNameFromImage(banner.imageUrl);
     if (shopName) {
-      const shopCoords = getShopCoordinates(shopName);
+      const shopCoords = await getShopCoordinates(shopName);
       if (shopCoords) {
         const distance = calculateDistance(
           userLat,
@@ -191,6 +232,8 @@ export function sortBannersByDistance(
     
     return { banner };
   });
+
+  const bannersWithDistance = await Promise.all(bannersWithDistancePromises);
 
   // Sort by distance (shops with distance first, then others)
   return bannersWithDistance.sort((a, b) => {

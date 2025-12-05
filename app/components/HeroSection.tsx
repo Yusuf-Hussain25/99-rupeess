@@ -47,6 +47,8 @@ export default function HeroSection({ category }: HeroSectionProps) {
                 title: heroData.banners[0].title,
                 ctaText: heroData.banners[0].cta || heroData.banners[0].ctaText || 'Explore',
                 advertiser: heroData.banners[0].advertiser || heroData.banners[0].title,
+                lat: heroData.banners[0].lat,
+                lng: heroData.banners[0].lng,
               }
             : undefined,
           left: (leftData.banners || []).map((banner: { id: string; imageUrl: string; title?: string; linkUrl: string; lat?: number; lng?: number }, index: number) => ({
@@ -85,7 +87,7 @@ export default function HeroSection({ category }: HeroSectionProps) {
     };
 
     fetchBanners();
-  }, [location.id, category]);
+  }, [location.id, location.latitude, location.longitude, category]);
 
   const handleBannerClick = async (
     bannerId: string,
@@ -176,7 +178,22 @@ export default function HeroSection({ category }: HeroSectionProps) {
 
           {/* CENTER COLUMN (60%) - Hero */}
           <div className="flex items-center justify-center">
-            <HeroBanner hero={data.hero} onBannerClick={handleBannerClick} />
+            {data.hero ? (
+              <HeroBanner 
+                key={`hero-desktop-${data.hero.bannerId}`}
+                hero={data.hero} 
+                onBannerClick={handleBannerClick}
+                userLat={location.latitude}
+                userLng={location.longitude}
+              />
+            ) : (
+              <div className="w-full h-[480px] bg-linear-to-br from-gray-100 to-gray-200 rounded-xl flex flex-col items-center justify-center border-2 border-dashed border-gray-300">
+                <svg className="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <p className="text-gray-600 font-medium mb-2">No hero banner</p>
+              </div>
+            )}
           </div>
 
           {/* RIGHT COLUMN (20%) */}
@@ -202,7 +219,23 @@ export default function HeroSection({ category }: HeroSectionProps) {
 
           {/* CENTER COLUMN */}
           <div className="flex items-center justify-center">
-            <HeroBanner hero={data.hero} onBannerClick={handleBannerClick} height="h-[360px]" />
+            {data.hero ? (
+              <HeroBanner 
+                key={`hero-tablet-${data.hero.bannerId}`}
+                hero={data.hero} 
+                onBannerClick={handleBannerClick} 
+                height="h-[360px]"
+                userLat={location.latitude}
+                userLng={location.longitude}
+              />
+            ) : (
+              <div className="w-full h-[360px] bg-linear-to-br from-gray-100 to-gray-200 rounded-xl flex flex-col items-center justify-center border-2 border-dashed border-gray-300">
+                <svg className="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <p className="text-gray-600 font-medium mb-2">No hero banner</p>
+              </div>
+            )}
           </div>
 
           {/* RIGHT COLUMN */}
@@ -228,7 +261,23 @@ export default function HeroSection({ category }: HeroSectionProps) {
 
           {/* CENTER COLUMN - Hero Banner */}
           <div className="flex items-center justify-center">
-            <HeroBanner hero={data.hero} onBannerClick={handleBannerClick} height="h-[280px] sm:h-[320px]" />
+            {data.hero ? (
+              <HeroBanner 
+                key={`hero-mobile-${data.hero.bannerId}`}
+                hero={data.hero} 
+                onBannerClick={handleBannerClick} 
+                height="h-[280px] sm:h-[320px]"
+                userLat={location.latitude}
+                userLng={location.longitude}
+              />
+            ) : (
+              <div className="w-full h-[280px] sm:h-[320px] bg-linear-to-br from-gray-100 to-gray-200 rounded-xl flex flex-col items-center justify-center border-2 border-dashed border-gray-300">
+                <svg className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <p className="text-gray-600 font-medium mb-2 text-sm sm:text-base">No hero banner</p>
+              </div>
+            )}
           </div>
 
           {/* RIGHT COLUMN - Service Cards */}

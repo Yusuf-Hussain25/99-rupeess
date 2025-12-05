@@ -23,7 +23,7 @@ export interface Offer {
 
 export interface Banner {
   id: string;
-  section: 'hero' | 'left' | 'right' | 'top' | 'bottom';
+  section: 'hero' | 'left' | 'right' | 'top' | 'bottom' | 'slider' | 'latest-offers' | 'featured-businesses' | 'top-rated-businesses' | 'new-businesses';
   imageUrl: string;
   title?: string;
   cta?: string;
@@ -36,6 +36,8 @@ export interface Banner {
   position?: number;
   lat?: number;
   lng?: number;
+  rating?: number;
+  reviews?: number;
 }
 
 export interface HeroSectionData {
@@ -47,6 +49,8 @@ export interface HeroSectionData {
     title?: string;
     ctaText?: string;
     advertiser?: string;
+    lat?: number;
+    lng?: number;
   };
   left: Array<{
     bannerId: string;

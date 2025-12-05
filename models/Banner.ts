@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
 export interface IBanner extends Document {
-  section: 'hero' | 'left' | 'right' | 'top' | 'bottom';
+  section: 'hero' | 'left' | 'right' | 'top' | 'bottom' | 'slider' | 'latest-offers' | 'featured-businesses' | 'top-rated-businesses' | 'new-businesses';
   imageUrl: string;
   title?: string;
   cta?: string;
@@ -11,6 +11,9 @@ export interface IBanner extends Document {
   advertiser?: string;
   sponsored: boolean;
   position?: number;
+  // Business data fields
+  rating?: number; // Business rating (0-5)
+  reviews?: number; // Number of reviews
   // Location-based fields
   area?: string; // e.g., "A.H. Guard", "B.C. Road"
   pincode?: number;
@@ -31,7 +34,7 @@ const BannerSchema = new Schema<IBanner>(
     section: {
       type: String,
       required: [true, 'Section is required'],
-      enum: ['hero', 'left', 'right', 'top', 'bottom'],
+      enum: ['hero', 'left', 'right', 'top', 'bottom', 'slider', 'latest-offers', 'featured-businesses', 'top-rated-businesses', 'new-businesses'],
     },
     imageUrl: {
       type: String,
@@ -65,6 +68,15 @@ const BannerSchema = new Schema<IBanner>(
     sponsored: {
       type: Boolean,
       default: false,
+    },
+    rating: {
+      type: Number,
+      min: 0,
+      max: 5,
+    },
+    reviews: {
+      type: Number,
+      min: 0,
     },
     position: {
       type: Number,

@@ -12,20 +12,47 @@ export default function NewBusinesses() {
 
   useEffect(() => {
     const fetchData = async () => {
+      // Wait for location to be available
+      if (!location?.id) {
+        setIsLoading(true);
+        return;
+      }
+
+      setIsLoading(true);
       try {
-        const res = await fetch('/api/businesses/featured');
-        const data = await res.json();
-        // Take last 6 as "new" businesses (in real app, would filter by created date)
-        const newBusinesses = (data.businesses || []).slice(-6).reverse();
-        setBusinesses(newBusinesses);
+        // Fetch location-specific banner images first
+        const bannersRes = await fetch(`/api/banners?section=new-businesses&loc=${location.id}&limit=10`);
+        const bannersData = await bannersRes.json();
+        
+        if (bannersData.banners && bannersData.banners.length > 0) {
+          // Convert banners to business format for display
+          const bannerBusinesses = bannersData.banners.map((b: any, index: number) => ({
+            id: b.id || `banner-${index}`,
+            name: b.advertiser || b.title || 'Business',
+            category: 'New',
+            imageUrl: b.imageUrl,
+            rating: b.rating !== undefined ? b.rating : 4.0,
+            reviews: b.reviews !== undefined ? b.reviews : 5,
+            city: location.city || 'Patna',
+            state: location.state,
+            offer: b.ctaText || b.title || '',
+            linkUrl: b.linkUrl || b.link || '#',
+          }));
+          setBusinesses(bannerBusinesses);
+        } else {
+          // Only show empty array if location is set but no banners found
+          // Don't fallback to default businesses API to avoid showing wrong images
+          setBusinesses([]);
+        }
       } catch (e) {
         console.error('Failed to load new businesses', e);
+        setBusinesses([]);
       } finally {
         setIsLoading(false);
       }
     };
     fetchData();
-  }, []);
+  }, [location?.id, location?.city, location?.state]);
 
   if (isLoading) {
     return (

@@ -3,25 +3,64 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import type { Offer } from '../types';
+import { useLocation } from '../contexts/LocationContext';
 
 export default function LatestOffers() {
+  const { location } = useLocation();
   const [offers, setOffers] = useState<Offer[]>([]);
+  const [bannerImages, setBannerImages] = useState<Array<{ 
+    imageUrl: string; 
+    link: string; 
+    alt: string;
+    name?: string;
+    offer?: string;
+    rating?: number;
+    reviews?: number;
+  }>>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
+      // Wait for location to be available
+      if (!location?.id) {
+        setIsLoading(true);
+        return;
+      }
+
+      setIsLoading(true);
       try {
-        const res = await fetch('/api/offers');
-        const data = await res.json();
-        setOffers(data.offers || []);
+        // Fetch location-specific banner images first
+        const bannersRes = await fetch(`/api/banners?section=latest-offers&loc=${location.id}&limit=10`);
+        const bannersData = await bannersRes.json();
+        
+        if (bannersData.banners && bannersData.banners.length > 0) {
+          // Use banner images if available with business data
+          setBannerImages(bannersData.banners.map((b: any) => ({
+            imageUrl: b.imageUrl,
+            link: b.linkUrl || b.link || '#',
+            alt: b.alt || b.title || 'Offer',
+            name: b.advertiser || b.title || 'Offer',
+            offer: b.ctaText || b.title || '',
+            rating: b.rating !== undefined ? b.rating : 4.5,
+            reviews: b.reviews !== undefined ? b.reviews : 10,
+          })));
+          setOffers([]); // Clear offers when using banners
+        } else {
+          // Only show empty if location is set but no banners found
+          // Don't fallback to default offers API to avoid showing wrong images
+          setBannerImages([]);
+          setOffers([]);
+        }
       } catch (e) {
         console.error('Failed to load latest offers', e);
+        setBannerImages([]);
+        setOffers([]);
       } finally {
         setIsLoading(false);
       }
     };
     fetchData();
-  }, []);
+  }, [location?.id]);
 
   const formatTimeRemaining = (expiresAt?: string) => {
     if (!expiresAt) return null;
@@ -75,7 +114,56 @@ export default function LatestOffers() {
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
-          {offers.map((offer, index) => {
+          {bannerImages.length > 0 ? (
+            bannerImages.map((banner, index) => {
+              const distance = (2 + Math.random() * 5).toFixed(1);
+              const locations = ['Rajendra Nagar', 'Kankarbagh', 'Boring Road', 'Gandhi Maidan', 'Exhibition Road', 'Patliputra Road'];
+              const area = locations[index % locations.length];
+              
+              return (
+                <article 
+                  key={index} 
+                  onClick={() => window.location.href = banner.link}
+                  className="group rounded-xl bg-white shadow-md border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-orange-300 cursor-pointer"
+                >
+                  <div className="relative h-40 sm:h-48 overflow-hidden">
+                    <Image 
+                      src={banner.imageUrl} 
+                      alt={banner.alt} 
+                      fill 
+                      className="object-cover transition-transform duration-500 group-hover:scale-105" 
+                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw" 
+                    />
+                    {banner.offer && (
+                      <span className="absolute top-2 right-2 z-20 inline-flex items-center px-2 py-1 rounded-md text-xs font-bold bg-red-500 text-white shadow-md">
+                        {banner.offer}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="p-3 sm:p-4">
+                    {banner.rating !== undefined && (
+                      <div className="flex items-center gap-1 mb-1.5">
+                        <span className="text-yellow-500 text-sm font-semibold">★</span>
+                        <span className="text-sm font-semibold text-gray-900">{banner.rating.toFixed(1)}</span>
+                      </div>
+                    )}
+                    <h3 className="text-sm sm:text-base font-bold text-gray-900 mb-1.5 line-clamp-2 min-h-[2.5rem] group-hover:text-orange-600 transition-colors">
+                      {banner.name || banner.alt}
+                    </h3>
+                    <div className="flex items-center gap-1 text-xs sm:text-sm text-gray-600">
+                      <svg className="w-3.5 h-3.5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      <span className="truncate">{distance}km, {area}</span>
+                    </div>
+                  </div>
+                </article>
+              );
+            })
+          ) : (
+            offers.map((offer, index) => {
             const distance = (2 + Math.random() * 5).toFixed(1);
             const locations = ['Rajendra Nagar', 'Kankarbagh', 'Boring Road', 'Gandhi Maidan', 'Exhibition Road', 'Patliputra Road'];
             const area = locations[index % locations.length];
@@ -122,7 +210,8 @@ export default function LatestOffers() {
                 </div>
               </article>
             );
-          })}
+          })
+          )}
         </div>
       </div>
     </section>

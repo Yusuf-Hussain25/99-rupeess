@@ -7,12 +7,14 @@ import {
   getDefaultLocation,
   loadStoredLocation,
   persistLocation,
+  geocodeLocation,
 } from '../utils/locationUtils';
 import type { PatnaLocation } from '../utils/locationUtils';
 
 interface LocationContextType {
   location: Location;
-  setLocation: (location: Location) => void;
+  setLocation: (location: Location) => Promise<void>;
+  isGeocoding: boolean;
 }
 
 const LocationContext = createContext<LocationContextType | undefined>(undefined);
@@ -24,13 +26,35 @@ const defaultLocation: Location = {
 
 export function LocationProvider({ children }: { children: ReactNode }) {
   const [location, setLocation] = useState<Location>(defaultLocation);
+  const [isGeocoding, setIsGeocoding] = useState(false);
+
+  // Function to set location with geocoding
+  const setLocationWithGeocoding = async (newLocation: Location) => {
+    setIsGeocoding(true);
+    try {
+      // If location doesn't have coordinates, geocode it
+      if (!newLocation.latitude || !newLocation.longitude) {
+        const geocoded = await geocodeLocation(newLocation as PatnaLocation);
+        if (geocoded) {
+          setLocation(geocoded);
+          return;
+        }
+      }
+      setLocation(newLocation);
+    } catch (error) {
+      console.warn('Geocoding failed, using location without coordinates:', error);
+      setLocation(newLocation);
+    } finally {
+      setIsGeocoding(false);
+    }
+  };
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
     const stored = loadStoredLocation();
     if (stored) {
-      setLocation({ ...stored, source: stored.source ?? 'manual' });
+      setLocationWithGeocoding({ ...stored, source: stored.source ?? 'manual' });
       return;
     }
 
@@ -38,7 +62,7 @@ export function LocationProvider({ children }: { children: ReactNode }) {
       try {
         const detected = await detectBrowserLocation();
         if (detected) {
-          setLocation({ ...detected, source: 'auto' });
+          setLocationWithGeocoding({ ...detected, source: 'auto' });
         }
       } catch (error) {
         console.warn('Automatic location detection failed:', error);
@@ -54,7 +78,7 @@ export function LocationProvider({ children }: { children: ReactNode }) {
   }, [location]);
 
   return (
-    <LocationContext.Provider value={{ location, setLocation }}>
+    <LocationContext.Provider value={{ location, setLocation: setLocationWithGeocoding, isGeocoding }}>
       {children}
     </LocationContext.Provider>
   );
