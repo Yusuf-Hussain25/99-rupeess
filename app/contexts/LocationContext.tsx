@@ -36,13 +36,37 @@ export function LocationProvider({ children }: { children: ReactNode }) {
       if (!newLocation.latitude || !newLocation.longitude) {
         const geocoded = await geocodeLocation(newLocation as PatnaLocation);
         if (geocoded) {
+          console.log('📍 Location Selected:', {
+            displayName: geocoded.displayName,
+            area: geocoded.area,
+            pincode: geocoded.pincode,
+            latitude: geocoded.latitude,
+            longitude: geocoded.longitude,
+            source: geocoded.source || 'manual'
+          });
           setLocation(geocoded);
           return;
         }
       }
+      console.log('📍 Location Selected:', {
+        displayName: newLocation.displayName,
+        area: newLocation.area,
+        pincode: newLocation.pincode,
+        latitude: newLocation.latitude,
+        longitude: newLocation.longitude,
+        source: newLocation.source || 'manual'
+      });
       setLocation(newLocation);
     } catch (error) {
       console.warn('Geocoding failed, using location without coordinates:', error);
+      console.log('📍 Location Selected (without coordinates):', {
+        displayName: newLocation.displayName,
+        area: newLocation.area,
+        pincode: newLocation.pincode,
+        latitude: newLocation.latitude,
+        longitude: newLocation.longitude,
+        source: newLocation.source || 'manual'
+      });
       setLocation(newLocation);
     } finally {
       setIsGeocoding(false);
@@ -76,6 +100,21 @@ export function LocationProvider({ children }: { children: ReactNode }) {
     if (!location.pincode) return;
     persistLocation(location as PatnaLocation);
   }, [location]);
+
+  // Log location changes with coordinates
+  useEffect(() => {
+    if (location.id) {
+      console.log('📍 Current Location Updated:', {
+        id: location.id,
+        displayName: location.displayName,
+        area: location.area,
+        pincode: location.pincode,
+        latitude: location.latitude,
+        longitude: location.longitude,
+        source: location.source || 'manual'
+      });
+    }
+  }, [location.id, location.latitude, location.longitude]);
 
   return (
     <LocationContext.Provider value={{ location, setLocation: setLocationWithGeocoding, isGeocoding }}>

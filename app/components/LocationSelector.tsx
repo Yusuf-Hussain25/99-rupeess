@@ -88,7 +88,16 @@ export default function LocationSelector({ currentLocation, onLocationChange, fo
   }, []);
 
   const handleLocationSelect = (location: PatnaLocation, source: Location['source'] = 'manual') => {
-    onLocationChange({ ...location, source });
+    const selectedLocation = { ...location, source };
+    console.log('📍 Location Selected from Selector:', {
+      displayName: selectedLocation.displayName,
+      area: selectedLocation.area,
+      pincode: selectedLocation.pincode,
+      latitude: selectedLocation.latitude,
+      longitude: selectedLocation.longitude,
+      source: selectedLocation.source
+    });
+    onLocationChange(selectedLocation);
     setIsOpen(false);
     setSearchQuery('');
     setDetectError(null);
@@ -176,13 +185,58 @@ export default function LocationSelector({ currentLocation, onLocationChange, fo
           handleLocationSelect(defaultLoc, 'browser');
           setDetectError(null); // Clear any previous error
         } else {
-          setDetectError('Your location appears to be outside Patna. Please select a Patna locality manually.');
+          // Location is outside Patna - set Sultanganj as default location
+          const sultanganjLocation: PatnaLocation = {
+            id: 'sultanganj-800006',
+            city: 'Patna',
+            state: 'Bihar',
+            country: 'IN',
+            displayName: 'Sultanganj',
+            pincode: 800006,
+            district: 'Patna',
+            area: 'Sultanganj',
+            latitude: 25.61300471670358,
+            longitude: 85.18363828158326,
+          };
+          // Automatically set Sultanganj as default location
+          handleLocationSelect(sultanganjLocation, 'browser');
+          setDetectError(null); // Clear any previous error
         }
       } else {
-        setDetectError('Unable to fetch your current location. Please allow permission or select manually.');
+        // No GPS coordinates - set Sultanganj as default location
+        const sultanganjLocation: PatnaLocation = {
+          id: 'sultanganj-800006',
+          city: 'Patna',
+          state: 'Bihar',
+          country: 'IN',
+          displayName: 'Sultanganj',
+          pincode: 800006,
+          district: 'Patna',
+          area: 'Sultanganj',
+          latitude: 25.61300471670358,
+          longitude: 85.18363828158326,
+        };
+        // Automatically set Sultanganj as default location
+        handleLocationSelect(sultanganjLocation, 'browser');
+        setDetectError(null); // Clear any previous error
       }
     } catch (error) {
-      setDetectError('Unable to fetch your current location. Please allow permission or select manually.');
+      // On error, set Sultanganj as default location
+      const sultanganjLocation: PatnaLocation = {
+        id: 'sultanganj-800006',
+        city: 'Patna',
+        state: 'Bihar',
+        country: 'IN',
+        displayName: 'Sultanganj',
+        pincode: 800006,
+        district: 'Patna',
+        area: 'Sultanganj',
+        latitude: 25.61300471670358,
+        longitude: 85.18363828158326,
+      };
+      // Automatically set Sultanganj as default location
+      handleLocationSelect(sultanganjLocation, 'browser');
+      setDetectError(null); // Clear any previous error
     } finally {
       setIsDetecting(false);
     }
